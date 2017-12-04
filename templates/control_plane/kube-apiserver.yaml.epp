@@ -1,0 +1,77 @@
+<%- |
+  String $full_image,
+  Boolean $hyperkube = true,
+  Array[String] $arguments = [],
+  String $bind_address = "0.0.0.0",
+  String $insecure_bind_address = "127.0.0.1",
+  Integer[1,65535] $insecure_port = 8080,
+  Integer[1,65535] $secure_port = 6443,
+| -%>
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    scheduler.alpha.kubernetes.io/critical-pod: ""
+  creationTimestamp: null
+  labels:
+    component: kube-apiserver
+    tier: control-plane
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  containers:
+    - command:
+<%- if $hyperkube { -%>
+        - /hyperkube
+<%- } -%>
+        - apiserver
+        - --bind-address=<%= $bind_address %>
+        - --insecure-bind-address=<%= $insecure_bind_address %>
+        - --insecure-port=<%= $insecure_port %>
+        - --secure-port=<%= $secure_port %>
+<%- $arguments.each |$arg| { -%>
+        - <%= $arg %>
+<%- } -%>
+      image: "<%= $full_image %>"
+      livenessProbe:
+        httpGet:
+          host: 127.0.0.1
+          port: <%= $insecure_port %>
+          path: /healthz
+        initialDelaySeconds: 15
+        periodSeconds: 15
+        timeoutSeconds: 15
+      name: kube-apiserver
+      ports:
+        - containerPort: <%= $secure_port %>
+          hostPort: <%= $secure_port %>
+          name: https
+        - containerPort: <%= $insecure_port %>
+          hostPort: <%= $insecure_port %>
+          name: local
+      resources:
+        requests:
+          cpu: 250m
+          memory: 128Mi
+      volumeMounts:
+        - mountPath: /etc/kubernetes
+          name: kubernetes-conf
+          readOnly: true
+        - mountPath: /srv/kubernetes
+          name: kubernetes-data
+        - mountPath: /etc/ssl/certs
+          name: ssl-certs
+          readOnly: true
+  hostNetwork: true
+  volumes:
+    - hostPath:
+        path: /etc/ssl/certs
+      name: ssl-certs
+    - hostPath:
+        path: /etc/kubernetes
+      name: kubernetes-conf
+    - hostPath:
+        path: /srv/kubernetes
+      name: kubernetes-data
+status: {}
