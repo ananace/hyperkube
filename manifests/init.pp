@@ -68,9 +68,11 @@ class hyperkube(
     '/srv/kubernetes': ;
   }
 
-  if $role == 'control_plane' {
-    include ::hyperkube::control_plane
-  }
+  if $role != undef {
+    if $role == 'control_plane' {
+      include ::hyperkube::control_plane
+    }
 
-  include ::hyperkube::node
+    include ::hyperkube::node
+  }
 }
