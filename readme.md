@@ -2,53 +2,32 @@
 
 ## Description
 
-Start with a one- or two-sentence summary of what the module does
-and/or what problem it solves. This is your 30-second elevator pitch
-for your module. Consider including OS/Puppet version it works with.
+This module installs, configures, and manages a Kubernetes cluster through
+the use of hyperkube packages.
 
-You can give more descriptive information in a second paragraph. This
-paragraph should answer the questions: "What does this module *do*?"
-and "Why would I use it?" If your module has a range of functionality
-(installation, configuration, management, et cetera), this is the time
-to mention it.
-
-## Setup
-
-### What hyperkube affects **OPTIONAL**
-
-If it's obvious what your module touches, you can skip this section.
-For example, folks can probably figure out that your mysql_instance
-module affects their MySQL instances.
-
-If there's more that they should know about, though, this is the place
-to mention:
-
-* A list of files, packages, services, or operations that the module
-  will alter, impact, or execute.
-* Dependencies that your module automatically installs.
-* Warnings or other important notices.
-
-
-### Setup Requirements **OPTIONAL**
-
-If your module requires anything extra before setting up (pluginsync
-enabled, et cetera), mention it here.
-
-If your most recent release breaks compatibility or requires
-particular steps for upgrading, you might want to include an
-additional "Upgrading" section here.
-
+The main focus is towards the current stable version of K8s (1.8.x), but it
+should be able to handle both older and newer versions without issues.
+Do note that bare-metal will require specifying URLs and hashes for the
+exact version that you require.
 
 ## Usage
 
-This section is where you describe how to customize, configure, and do
-the fancy stuff with your module here. It's especially helpful if you
-include usage examples and code samples for doing things with your
-module.
+To set up a docker-ized Kubernetes node on the current machine, linked to
+the K8s cluster running on server 10.0.0.2:
+```
+class { 'hyperkube':
+  api_server => 'https://10.0.0.2:6443',
+  role       => 'node',
+}
+```
 
+To set up a control plane (apiserver, scheduler, controller manager) on
+the current machine:
+```
+class { 'hyperkube':
+  role => 'control_plane',
+}
+```
 
-## Limitations
-
-This is where you list OS compatibility, version compatibility, et
-cetera. If there are Known Issues, you might want to include them
-under their own heading here.
+More specific configuration can be set up by manually applying the control-plan
+and node classes.

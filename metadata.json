@@ -1,14 +1,15 @@
 {
   "name": "liuit-hyperkube",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "author": "LiU-IT",
-  "summary": "Module for liuit/hyperkube",
-  "license": "TBD",
+  "summary": "Module for installing and managing K8s with hyperkube",
+  "license": "MIT",
   "source": "https://gitlab.it.liu.se/pm-liuit/hyperkube/tree/production",
   "project_page": "https://gitlab.it.liu.se/pm-liuit/hyperkube",
   "issues_url": "https://gitlab.it.liu.se/pm-liuit/hyperkube/issues",
   "dependencies": [
-    { "name": "puppetlabs-stdlib", "version_requirement": ">= 1.0.0" }
+    { "name": "puppetlabs-stdlib", "version_requirement": ">= 1.0.0" },
+    { "name": "puppetlabs-docker", "version_requirement": ">= 1.0.0" }
   ],
   "requirements": [
     { "name": "puppet", "version_requirement": ">= 4.5.0" }

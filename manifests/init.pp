@@ -15,25 +15,62 @@
 #
 # @example
 #    class { 'hyperkube':
-#      sample_parameter => [ 'pool.ntp.org', 'ntp.local.company.com' ],
+
 #    }
 #
 # === Authors
 #
-# Author Name <author.name@liu.se>
+# Alexander Olofsson <alexander.olofsson@liu.se>
 #
 # === Copyright
 #
 # Copyright 2017 Linköping University
 #
 class hyperkube(
-  Array[String] $sample_parameter = []
+  Enum['docker','native'] $packaging = 'docker',
+
+  String $docker_registry = "gcr.io/google_containers",
+  String $docker_image = "hyperkube",
+  String $docker_image_tag = "v1.8.4",
+
+  Boolean $docker_manage_docker = true,
+  Boolean $docker_manage_image = true,
+
+  Optional[String] $api_server = undef,
+  Optional[String] $native_url = undef,
+  Optional[String] $native_sha = undef,
+
+  Optional[Enum['node','control_plane']] $role = undef,
 ) {
-  notify { 'Example notify':
-    message => "Parameter: ${sample_parameter}",
+  if $packaging == 'docker' {
+    if $docker_manage_docker {
+      include ::docker
+    }
+
+    if $docker_manage_image {
+      docker::image { 'hyperkube':
+        ensure    => present,
+        image_tag => $image_tag,
+      }
+    }
   }
 
-  file { '/tmp/example.file':
-    content => epp("${module_name}/example.epp"),
+  file {
+    default:
+      ensure => directory;
+
+    '/etc/cni': ;
+    '/etc/cni/net.d': ;
+    '/etc/kubernetes': ;
+    '/etc/kubernetes/manifests': ;
+    '/opt/cni': ;
+    '/opt/cni/bin': ;
+    '/srv/kubernetes': ;
   }
+
+  if $role == 'control_plane' {
+    include ::hyperkube::control_plane
+  }
+
+  include ::hyperkube::node
 }
