@@ -25,7 +25,7 @@
 #
 # Copyright 2017 Linköping University
 #
-class hyperkube::addons::dashboard(
+class hyperkube::addons::kube_proxy(
   Enum['present','absent'] $ensure = 'present',
   Hyperkube::CIDR $cluster_cidr,
 ) {
