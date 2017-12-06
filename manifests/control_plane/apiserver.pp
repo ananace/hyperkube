@@ -25,6 +25,10 @@
 class hyperkube::control_plane::apiserver(
   Enum['present','absent'] $ensure = present,
 
+  String $docker_registry = $hyperkube::docker_registry,
+  String $docker_image = $hyperkube::docker_image,
+  String $docker_image_tag = $hyperkube::docker_image_tag,
+
   Optional[Array[Enum['AlwaysAdmit', 'AlwaysDeny', 'AlwaysPullImages', 'DefaultStorageClass', 'DefaultTolerationSeconds', 'DenyEscalatingExec', 'DenyExecOnPrivileged', 'EventRateLimit', 'GenericAdmissionWebhook', 'ImagePolicyWebhook', 'InitialResources', 'Initializers', 'LimitPodHardAntiAffinityTopology', 'LimitRanger', 'NamespaceAutoProvision', 'NamespaceExists', 'NamespaceLifecycle', 'NodeRestriction', 'OwnerReferencesPermissionEnforcement', 'PersistentVolumeClaimResize', 'PersistentVolumeLabel', 'PodNodeSelector', 'PodPreset', 'PodSecurityPolicy', 'PodTolerationRestriction', 'Priority', 'ResourceQuota', 'SecurityContextDeny', 'ServiceAccount']]] $admission_control = undef, # lint:ignore:140chars
   Optional[String] $admission_control_config_file = undef,
   Optional[Stdlib::Compat::Ip_address] $advertise_address = undef,
@@ -351,7 +355,7 @@ class hyperkube::control_plane::apiserver(
             "--${k}=${v}"
           }
         } + $_extra_parameters,
-        full_image    => "${hyperkube::registry}/${hyperkube::image}:${hyperkube::image_tag}",
+        full_image    => "${docker_registry}/${docker_image}:${docker_image_tag}",
         insecure_port => pick($insecure_port, 8080),
         secure_port   => pick($secure_port, 6443),
     }),
