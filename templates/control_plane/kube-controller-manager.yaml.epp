@@ -2,7 +2,7 @@
   String $full_image,
   Boolean $hyperkube = true,
   Array[String] $arguments = [],
-  Number[1,65535] $port = 10252,
+  Integer[1,65535] $port = 10252,
 | -%>
 ---
 apiVersion: v1
