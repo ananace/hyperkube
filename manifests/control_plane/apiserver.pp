@@ -175,7 +175,7 @@ class hyperkube::control_plane::apiserver(
   Optional[Boolean] $watch_cache = undef,
   Optional[Array[String]] $watch_cache_sizes = undef,
 
-  Optional[Variable[String,Array[String]]] $extra_parameters = undef,
+  Optional[Variant[String,Array[String]]] $extra_parameters = undef,
 ) {
   if $extra_parameters != undef {
     if $extra_parameters =~ String {
