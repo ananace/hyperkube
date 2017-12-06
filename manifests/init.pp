@@ -50,7 +50,8 @@ class hyperkube(
     if $docker_manage_image {
       docker::image { 'hyperkube':
         ensure    => present,
-        image_tag => $image_tag,
+        image     => "${docker_registry}/${docker_image}",
+        image_tag => $docker_image_tag,
       }
     }
   }
