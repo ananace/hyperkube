@@ -27,10 +27,10 @@ class hyperkube::addons::dashboard(
   Enum['present','absent'] $ensure = 'present',
   Boolean $rbac = true,
 ) {
-  file { "/etc/kubernetes/addons/dashboard.yaml":
+  file { '/etc/kubernetes/addons/dashboard.yaml':
     ensure  => $ensure,
-    content => epp("hyperkube/addons/dashboard.yaml.epp", {
-      rbac => $rbac,
+    content => epp('hyperkube/addons/dashboard.yaml.epp', {
+        rbac => $rbac,
     }),
   }
 }

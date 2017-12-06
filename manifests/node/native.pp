@@ -1,0 +1,3 @@
+class hyperkube::node::native(
+) {
+}

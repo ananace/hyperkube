@@ -26,13 +26,13 @@
 # Copyright 2017 Linköping University
 #
 class hyperkube::addons::kube_proxy(
-  Enum['present','absent'] $ensure = 'present',
   Hyperkube::CIDR $cluster_cidr,
+  Enum['present','absent'] $ensure = 'present',
 ) {
-  file { "/etc/kubernetes/addons/kube_proxy.yaml":
+  file { '/etc/kubernetes/addons/kube_proxy.yaml':
     ensure  => $ensure,
-    content => epp("hyperkube/addons/kube_proxy.yaml.epp", {
-      cluster_cidr => $cluster_cidr,
+    content => epp('hyperkube/addons/kube_proxy.yaml.epp', {
+        cluster_cidr => $cluster_cidr,
     }),
   }
 }

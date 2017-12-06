@@ -42,10 +42,10 @@
 # Copyright 2017 Linköping University
 #
 class hyperkube::addons::dns(
+  Stdlib::Compat::Ip_address $dns_ip,
   Enum['present','absent'] $ensure = 'present',
   Enum['coredns','kube-dns'] $provider = 'kube-dns',
   String $dns_domain = 'cluster.local',
-  Stdlib::Compat::Ip_address $dns_ip,
   Optional[Hyperkube::CIDR] $service_cidr = undef,
 ) {
   if $provider == 'coredns' and $service_cidr == undef {
@@ -58,9 +58,9 @@ class hyperkube::addons::dns(
   file { "/etc/kubernetes/addons/${provider}.yaml":
     ensure  => $ensure,
     content => epp("hyperkube/addons/${provider}.yaml.epp", {
-      dns_domain               => $dns_domain,
-      dns_server               => $dns_ip,
-      service_cluster_ip_range => $service_cidr
+        dns_domain               => $dns_domain,
+        dns_server               => $dns_ip,
+        service_cluster_ip_range => $service_cidr
     }),
   }
 }

@@ -25,7 +25,7 @@
 class hyperkube::control_plane::apiserver(
   Enum['present','absent'] $ensure = present,
 
-  Optional[Array[Enum['AlwaysAdmit', 'AlwaysDeny', 'AlwaysPullImages', 'DefaultStorageClass', 'DefaultTolerationSeconds', 'DenyEscalatingExec', 'DenyExecOnPrivileged', 'EventRateLimit', 'GenericAdmissionWebhook', 'ImagePolicyWebhook', 'InitialResources', 'Initializers', 'LimitPodHardAntiAffinityTopology', 'LimitRanger', 'NamespaceAutoProvision', 'NamespaceExists', 'NamespaceLifecycle', 'NodeRestriction', 'OwnerReferencesPermissionEnforcement', 'PersistentVolumeClaimResize', 'PersistentVolumeLabel', 'PodNodeSelector', 'PodPreset', 'PodSecurityPolicy', 'PodTolerationRestriction', 'Priority', 'ResourceQuota', 'SecurityContextDeny', 'ServiceAccount']]] $admission_control = undef,
+  Optional[Array[Enum['AlwaysAdmit', 'AlwaysDeny', 'AlwaysPullImages', 'DefaultStorageClass', 'DefaultTolerationSeconds', 'DenyEscalatingExec', 'DenyExecOnPrivileged', 'EventRateLimit', 'GenericAdmissionWebhook', 'ImagePolicyWebhook', 'InitialResources', 'Initializers', 'LimitPodHardAntiAffinityTopology', 'LimitRanger', 'NamespaceAutoProvision', 'NamespaceExists', 'NamespaceLifecycle', 'NodeRestriction', 'OwnerReferencesPermissionEnforcement', 'PersistentVolumeClaimResize', 'PersistentVolumeLabel', 'PodNodeSelector', 'PodPreset', 'PodSecurityPolicy', 'PodTolerationRestriction', 'Priority', 'ResourceQuota', 'SecurityContextDeny', 'ServiceAccount']]] $admission_control = undef, # lint:ignore:140chars
   Optional[String] $admission_control_config_file = undef,
   Optional[Stdlib::Compat::Ip_address] $advertise_address = undef,
   Optional[Boolean] $allow_privileged = undef,
@@ -103,7 +103,7 @@ class hyperkube::control_plane::apiserver(
   Optional[Enum['influxdb','gcm']] $ir_data_source = undef,
   Optional[String] $ir_dbname = undef,
   Optional[Hyperkube::URI] $ir_hawkular = undef,
-  Optional[Strinb] $ir_influxdb_host = undef,
+  Optional[String] $ir_influxdb_host = undef,
   Optional[Boolean] $ir_namespace_only = undef,
   Optional[Sensitive[String]] $ir_password = undef,
   Optional[Integer[0]] $ir_percentile = undef,
@@ -341,19 +341,19 @@ class hyperkube::control_plane::apiserver(
   file { '/etc/kubernetes/manifests/kube-apiserver.yaml':
     ensure  => file,
     content => epp('hyperkube/control_plane/kube-apiserver.yaml.epp', {
-      arguments     => $parameters.filter |$k,$v| { $v != undef }.map |$k,$v| {
-        if $v =~ Array {
-          "--${k}=${join($v, ',')}"
-        } elsif $v =~ Hash {
-          $reduced = $v.map |$mk, $mv| { "${mk}=${mv}" }
-          "--${k}=${reduced}"
-        } else {
-          "--${k}=${v}"
-        }
-      } + $_extra_parameters,
-      full_image    => "${hyperkube::registry}/${hyperkube::image}:${hyperkube::image_tag}",
-      insecure_port => pick($insecure_port, 8080),
-      secure_port   => pick($secure_port, 6443),
+        arguments     => $parameters.filter |$k,$v| { $v != undef }.map |$k,$v| {
+          if $v =~ Array {
+            "--${k}=${join($v, ',')}"
+          } elsif $v =~ Hash {
+            $reduced = $v.map |$mk, $mv| { "${mk}=${mv}" }
+            "--${k}=${reduced}"
+          } else {
+            "--${k}=${v}"
+          }
+        } + $_extra_parameters,
+        full_image    => "${hyperkube::registry}/${hyperkube::image}:${hyperkube::image_tag}",
+        insecure_port => pick($insecure_port, 8080),
+        secure_port   => pick($secure_port, 6443),
     }),
   }
 }
