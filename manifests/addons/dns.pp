@@ -51,9 +51,7 @@ class hyperkube::addons::dns(
   if $provider == 'coredns' and $service_cidr == undef {
     fail('When using the CoreDNS provider, you need to provide a service CIDR')
   }
-  if !defined(Hyperkube::Control_plane::Addon_manager) {
-    fail('Addons can only be applied on the same node as the addon manager')
-  }
+  require ::hyperkube::control_plane::addon_manager
 
   file { "/etc/kubernetes/addons/${provider}.yaml":
     ensure  => $ensure,
