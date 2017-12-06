@@ -63,7 +63,7 @@ class hyperkube::control_plane::scheduler(
           }
         } + $_extra_parameters,
         full_image => "${docker_registry}/${docker_image}:${docker_image_tag}",
-        port       => pick($port, 10252),
+        port       => pick($port, 10251),
     }),
   }
 }
