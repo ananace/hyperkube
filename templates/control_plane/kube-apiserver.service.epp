@@ -1,14 +1,6 @@
-<%- |
-  String $version,
-  Boolean $etcd = false,
-  | -%>
-[Unit]
 Description=Kubernetes API Server
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
-After=network.target
-<%- if $etcd { -%>
-After=etcd.service
-<%- } -%>
+After=network.target etcd.service
 
 [Service]
 EnvironmentFile=-/etc/kubernetes/apiserver

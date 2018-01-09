@@ -85,9 +85,7 @@ class hyperkube::control_plane::scheduler(
       target => "/opt/hyperkube/bin/hyperkube-${version}",
     }
     systemd::unit_file { 'kube-scheduler.service':
-      content => epp('hyperkube/control_plane/kube-scheduler.service.epp', {
-          'version' => $version,
-      }),
+      content => epp('hyperkube/control_plane/kube-scheduler.service.epp'),
     }
     ~> service { 'kube-scheduler':
       ensure => running,
