@@ -45,7 +45,7 @@ class hyperkube::control_plane::controller_manager(
   $parameters = {
   }
 
-  $parameter_string = $parameters.filter |$k,$v| { $v != undef }.map |$k,$v| {
+  $parameter_result = $parameters.filter |$k,$v| { $v != undef }.map |$k,$v| {
     if $v =~ Array {
       "--${k}=${join($v, ',')}"
     } elsif $v =~ Hash {
@@ -66,7 +66,7 @@ class hyperkube::control_plane::controller_manager(
     file { '/etc/kubernetes/manifests/kube-controller-manager.yaml':
       ensure  => file,
       content => epp('hyperkube/control_plane/kube-controller-manager.yaml.epp', {
-          arguments  => $parameter_string,
+          arguments  => $parameter_result,
           full_image => "${docker_registry}/${docker_image}:${docker_image_tag}",
           port       => pick($port, 10252),
       }),
@@ -77,7 +77,7 @@ class hyperkube::control_plane::controller_manager(
       content => epp('hyperkube/sysconfig.epp', {
           comment               => 'Kubernetes Controller Manager Configuration',
           environment_variables => {
-            'KUBE_CONTROLLER_MANAGER_ARGS' => $parameter_string,
+            'KUBE_CONTROLLER_MANAGER_ARGS' => join($parameter_result, ' '),
           },
       }),
     }

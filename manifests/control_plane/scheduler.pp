@@ -45,7 +45,7 @@ class hyperkube::control_plane::scheduler(
   $parameters = {
   }
 
-  $parameter_string = $parameters.filter |$k,$v| { $v != undef }.map |$k,$v| {
+  $parameter_result = $parameters.filter |$k,$v| { $v != undef }.map |$k,$v| {
     if $v =~ Array {
       "--${k}=${join($v, ',')}"
     } elsif $v =~ Hash {
@@ -66,7 +66,7 @@ class hyperkube::control_plane::scheduler(
     file { '/etc/kubernetes/manifests/kube-scheduler.yaml':
       ensure  => file,
       content => epp('hyperkube/control_plane/kube-scheduler.yaml.epp', {
-          arguments  => $parameter_string,
+          arguments  => $parameter_result,
           full_image => "${docker_registry}/${docker_image}:${docker_image_tag}",
           port       => pick($port, 10251),
       }),
@@ -77,7 +77,7 @@ class hyperkube::control_plane::scheduler(
       content => epp('hyperkube/sysconfig.epp', {
           comment               => 'Kubernetes Scheduler Configuration',
           environment_variables => {
-            'KUBE_SCHEDULER_ARGS' => $parameter_string,
+            'KUBE_SCHEDULER_ARGS' => join($parameter_result, ' '),
           },
       }),
     }

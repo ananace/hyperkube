@@ -344,7 +344,7 @@ class hyperkube::control_plane::apiserver(
     'watch-cache-sizes'                            => $watch_cache_sizes,
   }
 
-  $parameter_string = $parameters.filter |$k,$v| { $v != undef }.map |$k,$v| {
+  $parameter_result = $parameters.filter |$k,$v| { $v != undef }.map |$k,$v| {
     if $v =~ Array {
       "--${k}=${join($v, ',')}"
     } elsif $v =~ Hash {
@@ -359,7 +359,7 @@ class hyperkube::control_plane::apiserver(
     file { '/etc/kubernetes/manifests/kube-apiserver.yaml':
       ensure  => file,
       content => epp('hyperkube/control_plane/kube-apiserver.yaml.epp', {
-          arguments     => $parameter_string,
+          arguments     => $parameter_result,
           full_image    => "${docker_registry}/${docker_image}:${docker_image_tag}",
           insecure_port => pick($insecure_port, 8080),
           secure_port   => pick($secure_port, 6443),
@@ -371,7 +371,7 @@ class hyperkube::control_plane::apiserver(
       content => epp('hyperkube/sysconfig.epp', {
           comment               => 'Kubernetes APIServer Configuration',
           environment_variables => {
-            'KUBE_APISERVER_ARGS' => $parameter_string,
+            'KUBE_APISERVER_ARGS' => join($parameter_result, ' '),
           }
       }),
     }
