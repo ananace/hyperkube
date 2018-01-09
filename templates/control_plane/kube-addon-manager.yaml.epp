@@ -1,6 +1,9 @@
 <%- |
   String $full_image = 'gcr.io/google-containers/kube-addon-manager:v6.5',
 | -%>
+### NB: File managed by Puppet.
+###     Any changes will be overwritten.
+#
 # Taken from https://github.com/kubernetes/kubernetes/blob/master/cluster/saltbase/salt/kube-addons/kube-addon-manager.yaml
 ---
 apiVersion: v1

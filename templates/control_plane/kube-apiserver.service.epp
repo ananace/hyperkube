@@ -1,0 +1,23 @@
+<%- |
+  String $version,
+  Boolean $etcd = false,
+  | -%>
+[Unit]
+Description=Kubernetes API Server
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+After=network.target
+<%- if $etcd { -%>
+After=etcd.service
+<%- } -%>
+
+[Service]
+EnvironmentFile=-/etc/kubernetes/apiserver
+User=kube
+ExecStart=/opt/hyperkube/bin/hyperkube-<%= $version %> kube-apiserver \
+            $KUBE_APISERVER_ARGS
+Restart=on-failure
+Type=notify
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

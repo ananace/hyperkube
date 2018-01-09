@@ -59,6 +59,20 @@ class hyperkube(
       }
     }
   } else {
+    group { 'kube':
+      ensure => present,
+      system => true,
+    }
+    user { 'kube':
+      ensure     => present,
+      comment    => 'Kubernetes user',
+      gid        => 'kube',
+      home       => '/',
+      managehome => false,
+      shell      => '/sbin/nologin',
+      system     => true,
+    }
+
     file {
       default:
         ensure  => directory,

@@ -25,6 +25,8 @@
 class hyperkube::control_plane::apiserver(
   Enum['present','absent'] $ensure = present,
 
+  String $version = $hyperkube::version,
+
   String $docker_registry = $hyperkube::docker_registry,
   String $docker_image = $hyperkube::docker_image,
   String $docker_image_tag = $hyperkube::docker_image_tag,
@@ -342,22 +344,41 @@ class hyperkube::control_plane::apiserver(
     'watch-cache-sizes'                            => $watch_cache_sizes,
   }
 
-  file { '/etc/kubernetes/manifests/kube-apiserver.yaml':
-    ensure  => file,
-    content => epp('hyperkube/control_plane/kube-apiserver.yaml.epp', {
-        arguments     => $parameters.filter |$k,$v| { $v != undef }.map |$k,$v| {
-          if $v =~ Array {
-            "--${k}=${join($v, ',')}"
-          } elsif $v =~ Hash {
-            $reduced = $v.map |$mk, $mv| { "${mk}=${mv}" }
-            "--${k}=${reduced}"
-          } else {
-            "--${k}=${v}"
+  $parameter_string = $parameters.filter |$k,$v| { $v != undef }.map |$k,$v| {
+    if $v =~ Array {
+      "--${k}=${join($v, ',')}"
+    } elsif $v =~ Hash {
+      $reduced = $v.map |$mk, $mv| { "${mk}=${mv}" }
+      "--${k}=${reduced}"
+    } else {
+      "--${k}=${v}"
+    }
+  } + $_extra_parameters
+
+  if $hyperkube::packaging == 'docker' {
+    file { '/etc/kubernetes/manifests/kube-apiserver.yaml':
+      ensure  => file,
+      content => epp('hyperkube/control_plane/kube-apiserver.yaml.epp', {
+          arguments     => $parameter_string,
+          full_image    => "${docker_registry}/${docker_image}:${docker_image_tag}",
+          insecure_port => pick($insecure_port, 8080),
+          secure_port   => pick($secure_port, 6443),
+      }),
+    }
+  } else {
+    file { '/etc/kubernetes/apiserver':
+      ensure  => file,
+      content => epp('hyperkube/sysconfig.epp', {
+          comment               => 'Kubernetes APIServer Configuration',
+          environment_variables => {
+            'KUBE_APISERVER_ARGS' => $parameter_string,
           }
-        } + $_extra_parameters,
-        full_image    => "${docker_registry}/${docker_image}:${docker_image_tag}",
-        insecure_port => pick($insecure_port, 8080),
-        secure_port   => pick($secure_port, 6443),
-    }),
+      }),
+    }
+    systemd::unit_file { 'kube-apiserver.service':
+      content => epp('hyperkube/control_plane/kube-apiserver.service.epp', {
+          $version => $version,
+      }),
+    }
   }
 }
