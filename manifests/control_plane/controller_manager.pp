@@ -26,7 +26,7 @@ class hyperkube::control_plane::controller_manager(
 
   String $docker_registry = $hyperkube::docker_registry,
   String $docker_image = $hyperkube::docker_image,
-  String $docker_image_tag = $hyperkube::docker_image_tag,
+  String $docker_image_tag = pick($hyperkube::docker_image_tag, "v${version}"),
 
   Optional[Integer[1,65535]] $port = undef,
 
