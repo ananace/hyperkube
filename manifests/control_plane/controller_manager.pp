@@ -84,7 +84,7 @@ class hyperkube::control_plane::controller_manager(
 
     systemd::unit_file { 'kube-controller-manager.service':
       content => epp('hyperkube/control_plane/kube-controller-manager.service.epp', {
-          $version => $version,
+          'version' => $version,
       }),
     }
     ~> service { 'kube-controller-manager':
