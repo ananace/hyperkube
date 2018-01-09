@@ -28,31 +28,56 @@
 #
 class hyperkube(
   Enum['docker','native'] $packaging = 'docker',
+  String $version = '1.8.4',
 
-  String $docker_registry = "gcr.io/google_containers",
-  String $docker_image = "hyperkube",
-  String $docker_image_tag = "v1.8.4",
+  String $docker_registry = 'gcr.io/google_containers',
+  String $docker_image = 'hyperkube',
 
-  Boolean $docker_manage_docker = true,
+  String $native_url_template = 'http://storage.googleapis.com/kubernetes-release/release/v%s/bin/linux/amd64/hyperkube',
+
   Boolean $docker_manage_image = true,
 
+  Boolean $manage_docker = true,
+
   Optional[String] $api_server = undef,
+  Optional[String] $docker_image_tag = undef,
   Optional[String] $native_url = undef,
   Optional[String] $native_sha = undef,
 
   Optional[Enum['node','control_plane']] $role = undef,
 ) {
-  if $packaging == 'docker' {
-    if $docker_manage_docker {
-      include ::docker
-    }
+  if $manage_docker {
+    include ::docker
+  }
 
+  if $packaging == 'docker' {
     if $docker_manage_image {
       docker::image { 'hyperkube':
         ensure    => present,
         image     => "${docker_registry}/${docker_image}",
-        image_tag => $docker_image_tag,
+        image_tag => pick($docker_image_tag, "v${version}"),
       }
+    }
+  } else {
+    file {
+      default:
+        ensure  => directory,
+        purge   => true,
+        recurse => true;
+
+      '/opt/hyperkube': ;
+      '/opt/hyperkube/bin': ;
+    }
+
+    file { "/opt/hyperkube/bin/hyperkube-${version}":
+      ensure => file,
+      user   => 'root',
+      group  => 'root',
+      mode   => '0755',
+      source => [
+        "/opt/hyperkube/bin/hyperkube-${version}",
+        pick($native_url, sprintf($native_url_template, $version)),
+      ],
     }
   }
 
