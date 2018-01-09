@@ -11,6 +11,7 @@
 #    class { 'hyperkube::control_plane::apiserver':
 #      $allow_privileged = true,
 #      $apiserver_count = 2,
+#      $etcd_servers = [ 'https://1.2.3.4:2379', 'http://127.0.0.1:4001' ],
 #      $service_cluster_ip_range = '10.0.1.0/24',
 #    }
 #
@@ -23,14 +24,18 @@
 # Copyright 2017 Linköping University
 #
 class hyperkube::control_plane::apiserver(
-  Enum['present','absent'] $ensure = present,
+  # Required parameters
+  Array[Hyperkube::URI] $etcd_servers,
+  Hyperkube::CIDR $service_cluster_ip_range = '10.0.0.0/24',
 
+  # Meta parameters
   String $version = $hyperkube::version,
 
   String $docker_registry = $hyperkube::docker_registry,
   String $docker_image = $hyperkube::docker_image,
   String $docker_image_tag = pick($hyperkube::docker_image_tag, "v${version}"),
 
+  # APIServer parameters
   Optional[Array[Enum['AlwaysAdmit', 'AlwaysDeny', 'AlwaysPullImages', 'DefaultStorageClass', 'DefaultTolerationSeconds', 'DenyEscalatingExec', 'DenyExecOnPrivileged', 'EventRateLimit', 'GenericAdmissionWebhook', 'ImagePolicyWebhook', 'InitialResources', 'Initializers', 'LimitPodHardAntiAffinityTopology', 'LimitRanger', 'NamespaceAutoProvision', 'NamespaceExists', 'NamespaceLifecycle', 'NodeRestriction', 'OwnerReferencesPermissionEnforcement', 'PersistentVolumeClaimResize', 'PersistentVolumeLabel', 'PodNodeSelector', 'PodPreset', 'PodSecurityPolicy', 'PodTolerationRestriction', 'Priority', 'ResourceQuota', 'SecurityContextDeny', 'ServiceAccount']]] $admission_control = undef, # lint:ignore:140chars
   Optional[String] $admission_control_config_file = undef,
   Optional[Stdlib::Compat::Ip_address] $advertise_address = undef,
@@ -91,7 +96,6 @@ class hyperkube::control_plane::apiserver(
   Optional[Stdlib::Unixpath] $etcd_keyfile = undef,
   Optional[Stdlib::Unixpath] $etcd_prefix = undef,
   Optional[Boolean] $etcd_quorum_read = undef,
-  Optional[Array[Hyperkube::URI]] $etcd_servers = undef,
   Optional[Array[String]] $etcd_servers_overrides = undef,
   Optional[Hash[String,Hyperkube::Duration]] $event_storage_age_limit = undef,
   Optional[Hash[String,Hyperkube::Duration]] $event_storage_event_limit = undef,
@@ -155,7 +159,6 @@ class hyperkube::control_plane::apiserver(
   Optional[Integer[1,65535]] $secure_port = undef,
   Optional[Array[Stdlib::Unixpath]] $service_account_key_file = undef,
   Optional[Boolean] $service_account_lookup = undef,
-  Optional[Hyperkube::CIDR] $service_cluster_ip_range = undef,
   Optional[Hyperkube::PortRange] $service_node_port_range = undef,
   Optional[Stdlib::Unixpath] $ssh_keyfile = undef,
   Optional[String] $ssh_user = undef,
@@ -182,6 +185,8 @@ class hyperkube::control_plane::apiserver(
   Optional[Array[String]] $watch_cache_sizes = undef,
 
   Optional[Variant[String,Array[String]]] $extra_parameters = undef,
+
+  Enum['present','absent'] $ensure = present,
 ) {
   if $extra_parameters != undef {
     if $extra_parameters =~ String {
@@ -355,37 +360,52 @@ class hyperkube::control_plane::apiserver(
     }
   } + $_extra_parameters
 
-  if $hyperkube::packaging == 'docker' {
-    file { '/etc/kubernetes/manifests/kube-apiserver.yaml':
-      ensure  => file,
-      content => epp('hyperkube/control_plane/kube-apiserver.yaml.epp', {
-          arguments     => $parameter_result,
-          full_image    => "${docker_registry}/${docker_image}:${docker_image_tag}",
-          insecure_port => pick($insecure_port, 8080),
-          secure_port   => pick($secure_port, 6443),
-      }),
+  if $ensure == 'absent' {
+    file {
+      default:
+        ensure => absent;
+
+      '/etc/kubernetes/manifests/kube-apiserver.yaml': ;
+      '/etc/kubernetes/apiserver': ;
+      '/opt/hyperkube/bin/kube-apiserver': ;
+    }
+    service { 'kube-apiserver':
+      ensure => stopped,
+      enable => false,
     }
   } else {
-    file { '/etc/kubernetes/apiserver':
-      ensure  => file,
-      content => epp('hyperkube/sysconfig.epp', {
-          comment               => 'Kubernetes APIServer Configuration',
-          environment_variables => {
-            'KUBE_APISERVER_ARGS' => join($parameter_result, ' '),
-          }
-      }),
-    }
+    if $hyperkube::packaging == 'docker' {
+      file { '/etc/kubernetes/manifests/kube-apiserver.yaml':
+        ensure  => file,
+        content => epp('hyperkube/control_plane/kube-apiserver.yaml.epp', {
+            arguments     => $parameter_result,
+            full_image    => "${docker_registry}/${docker_image}:${docker_image_tag}",
+            insecure_port => pick($insecure_port, 8080),
+            secure_port   => pick($secure_port, 6443),
+        }),
+      }
+    } else {
+      file { '/etc/kubernetes/apiserver':
+        ensure  => file,
+        content => epp('hyperkube/sysconfig.epp', {
+            comment               => 'Kubernetes APIServer Configuration',
+            environment_variables => {
+              'KUBE_APISERVER_ARGS' => join($parameter_result, ' '),
+            }
+        }),
+      }
 
-    file { '/opt/hyperkube/bin/kube-apiserver':
-      ensure => link,
-      target => "/opt/hyperkube/bin/hyperkube-${version}",
-    }
-    systemd::unit_file { 'kube-apiserver.service':
-      content => epp('hyperkube/control_plane/kube-apiserver.service.epp'),
-    }
-    ~> service { 'kube-apiserver':
-      ensure => running,
-      enable => true,
+      file { '/opt/hyperkube/bin/kube-apiserver':
+        ensure => link,
+        target => "/opt/hyperkube/bin/hyperkube-${version}",
+      }
+      systemd::unit_file { 'kube-apiserver.service':
+        content => epp('hyperkube/control_plane/kube-apiserver.service.epp'),
+      }
+      ~> service { 'kube-apiserver':
+        ensure => running,
+        enable => true,
+      }
     }
   }
 }
