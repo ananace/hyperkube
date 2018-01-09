@@ -11,8 +11,8 @@ After=kube-apiserver.service
 EnvironmentFile=-/etc/kubernetes/scheduler
 User=kube
 ExecStart=/opt/hyperkube/bin/hyperkube-<%= $version %> kube-scheduler \
-            $KUBE_LOGTOSTDERR
-            $KUBE_LOG_LEVEL
+            $KUBE_LOGTOSTDERR \
+            $KUBE_LOG_LEVEL \
             $KUBE_SCHEDULER_ARGS
 Restart=on-failure
 LimitNOFILE=65536

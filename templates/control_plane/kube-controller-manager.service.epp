@@ -11,8 +11,8 @@ After=kube-apiserver.service
 EnvironmentFile=-/etc/kubernetes/controller-manager
 User=kube
 ExecStart=/opt/hyperkube/bin/hyperkube-<%= $version %> kube-controller-manager \
-            $KUBE_LOGTOSTDERR
-            $KUBE_LOG_LEVEL
+            $KUBE_LOGTOSTDERR \
+            $KUBE_LOG_LEVEL \
             $KUBE_CONTROLLER_MANAGER_ARGS
 Restart=on-failure
 LimitNOFILE=65536
