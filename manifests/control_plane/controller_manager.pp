@@ -56,13 +56,12 @@ class hyperkube::control_plane::controller_manager(
     }
   } + $_extra_parameters
 
-  file { '/etc/kubernetes/controller-manager.conf':
-    ensure  => file,
-    content => epp('hyperkube/kubeconfig.epp', {
-    }),
-  }
 
   if $hyperkube::packaging == 'docker' {
+    file { '/etc/kubernetes/controller-manager.conf':
+      ensure  => file,
+      content => epp('hyperkube/kubeconfig.epp'),
+    }
     file { '/etc/kubernetes/manifests/kube-controller-manager.yaml':
       ensure  => file,
       content => epp('hyperkube/control_plane/kube-controller-manager.yaml.epp', {

@@ -56,13 +56,11 @@ class hyperkube::control_plane::scheduler(
     }
   } + $_extra_parameters
 
-  file { '/etc/kubernetes/scheduler.conf':
-    ensure  => file,
-    content => epp('hyperkube/kubeconfig.epp', {
-    }),
-  }
-
   if $hyperkube::packaging == 'docker' {
+    file { '/etc/kubernetes/scheduler.conf':
+      ensure  => file,
+      content => epp('hyperkube/kubeconfig.epp'),
+    }
     file { '/etc/kubernetes/manifests/kube-scheduler.yaml':
       ensure  => file,
       content => epp('hyperkube/control_plane/kube-scheduler.yaml.epp', {

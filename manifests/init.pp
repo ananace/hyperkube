@@ -110,8 +110,12 @@ class hyperkube(
 
     '/etc/cni': ;
     '/etc/cni/net.d': ;
-    '/etc/kubernetes': ;
-    '/etc/kubernetes/manifests': ;
+    '/etc/kubernetes':
+      purge   => true,
+      recurse => true;
+    '/etc/kubernetes/manifests':
+      purge   => true,
+      recurse => true;
     '/opt/cni': ;
     '/opt/cni/bin': ;
     '/srv/kubernetes': ;
