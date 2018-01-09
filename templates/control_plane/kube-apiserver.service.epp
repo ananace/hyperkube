@@ -13,7 +13,7 @@ After=etcd.service
 [Service]
 EnvironmentFile=-/etc/kubernetes/apiserver
 User=kube
-ExecStart=/opt/hyperkube/bin/hyperkube-<%= $version %> kube-apiserver \
+ExecStart=/opt/hyperkube/bin/kube-apiserver \
             $KUBE_LOGTOSTDERR \
             $KUBE_LOG_LEVEL \
             $KUBE_APISERVER_ARGS

@@ -376,6 +376,10 @@ class hyperkube::control_plane::apiserver(
       }),
     }
 
+    file { '/opt/hyperkube/bin/kube-apiserver':
+      ensure => link,
+      target => "/opt/hyperkube/bin/hyperkube-${version}",
+    }
     systemd::unit_file { 'kube-apiserver.service':
       content => epp('hyperkube/control_plane/kube-apiserver.service.epp', {
           'version' => $version,

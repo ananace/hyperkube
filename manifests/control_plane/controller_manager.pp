@@ -81,6 +81,10 @@ class hyperkube::control_plane::controller_manager(
       }),
     }
 
+    file { '/opt/hyperkube/bin/kube-controller-manager':
+      ensure => link,
+      target => "/opt/hyperkube/bin/hyperkube-${version}",
+    }
     systemd::unit_file { 'kube-controller-manager.service':
       content => epp('hyperkube/control_plane/kube-controller-manager.service.epp', {
           'version' => $version,

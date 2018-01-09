@@ -1,7 +1,3 @@
-<%- |
-  String $version,
-  Boolean $etcd = false,
-  | -%>
 [Unit]
 Description=Kubernetes Scheduler Plugin
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
@@ -10,7 +6,7 @@ After=kube-apiserver.service
 [Service]
 EnvironmentFile=-/etc/kubernetes/scheduler
 User=kube
-ExecStart=/opt/hyperkube/bin/hyperkube-<%= $version %> kube-scheduler \
+ExecStart=/opt/hyperkube/bin/kube-scheduler \
             $KUBE_LOGTOSTDERR \
             $KUBE_LOG_LEVEL \
             $KUBE_SCHEDULER_ARGS

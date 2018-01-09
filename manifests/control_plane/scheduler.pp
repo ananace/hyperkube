@@ -80,6 +80,10 @@ class hyperkube::control_plane::scheduler(
       }),
     }
 
+    file { '/opt/hyperkube/bin/kube-scheduler':
+      ensure => link,
+      target => "/opt/hyperkube/bin/hyperkube-${version}",
+    }
     systemd::unit_file { 'kube-scheduler.service':
       content => epp('hyperkube/control_plane/kube-scheduler.service.epp', {
           'version' => $version,
