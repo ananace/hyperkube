@@ -86,7 +86,6 @@ class hyperkube(
     file { '/etc/kubernetes/config':
       ensure  => file,
       content => epp('hyperkube/sysconfig.epp', {
-
           comment               => 'General Kubernetes Configuration',
           environment_variables => {
             'KUBE_LOGTOSTDERR' => '--alsologtostderr',
@@ -97,8 +96,6 @@ class hyperkube(
 
     file { "/opt/hyperkube/bin/hyperkube-${version}":
       ensure => file,
-      user   => 'root',
-      group  => 'root',
       mode   => '0755',
       source => [
         "/opt/hyperkube/bin/hyperkube-${version}",
