@@ -375,10 +375,15 @@ class hyperkube::control_plane::apiserver(
           }
       }),
     }
+
     systemd::unit_file { 'kube-apiserver.service':
       content => epp('hyperkube/control_plane/kube-apiserver.service.epp', {
           $version => $version,
       }),
+    }
+    ~> service { 'kube-apiserver':
+      ensure => running,
+      enable => true,
     }
   }
 }

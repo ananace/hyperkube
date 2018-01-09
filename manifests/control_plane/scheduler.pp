@@ -22,6 +22,8 @@
 class hyperkube::control_plane::scheduler(
   Enum['present','absent'] $ensure = present,
 
+  String $version = $hyperkube::version,
+
   String $docker_registry = $hyperkube::docker_registry,
   String $docker_image = $hyperkube::docker_image,
   String $docker_image_tag = $hyperkube::docker_image_tag,
@@ -43,27 +45,51 @@ class hyperkube::control_plane::scheduler(
   $parameters = {
   }
 
+  $parameter_string = $parameters.filter |$k,$v| { $v != undef }.map |$k,$v| {
+    if $v =~ Array {
+      "--${k}=${join($v, ',')}"
+    } elsif $v =~ Hash {
+      $reduced = $v.map |$mk, $mv| { "${mk}=${mv}" }
+      "--${k}=${reduced}"
+    } else {
+      "--${k}=${v}"
+    }
+  } + $_extra_parameters
+
   file { '/etc/kubernetes/scheduler.conf':
     ensure  => file,
     content => epp('hyperkube/kubeconfig.epp', {
     }),
   }
 
-  file { '/etc/kubernetes/manifests/kube-scheduler.yaml':
-    ensure  => file,
-    content => epp('hyperkube/control_plane/kube-scheduler.yaml.epp', {
-        arguments  => $parameters.filter |$k,$v| { $v != undef }.map |$k,$v| {
-          if $v =~ Array {
-            "--${k}=${join($v, ',')}"
-          } elsif $v =~ Hash {
-            $reduced = $v.map |$mk, $mv| { "${mk}=${mv}" }
-            "--${k}=${reduced}"
-          } else {
-            "--${k}=${v}"
-          }
-        } + $_extra_parameters,
-        full_image => "${docker_registry}/${docker_image}:${docker_image_tag}",
-        port       => pick($port, 10251),
-    }),
+  if $hyperkube::packaging == 'docker' {
+    file { '/etc/kubernetes/manifests/kube-scheduler.yaml':
+      ensure  => file,
+      content => epp('hyperkube/control_plane/kube-scheduler.yaml.epp', {
+          arguments  => $parameter_string,
+          full_image => "${docker_registry}/${docker_image}:${docker_image_tag}",
+          port       => pick($port, 10251),
+      }),
+    }
+  } else {
+    file { '/etc/kubernetes/scheduler':
+      ensure  => file,
+      content => epp('hyperkube/sysconfig.epp', {
+          comment               => 'Kubernetes Scheduler Configuration',
+          environment_variables => {
+            'KUBE_SCHEDULER_ARGS' => $parameter_string,
+          },
+      }),
+    }
+
+    systemd::unit_file { 'kube-scheduler.service':
+      content => epp('hyperkube/control_plane/kube-scheduler.service.epp', {
+          $version => $version,
+      }),
+    }
+    ~> service { 'kube-scheduler':
+      ensure => running,
+      enable => true,
+    }
   }
 }

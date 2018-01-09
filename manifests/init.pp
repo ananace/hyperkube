@@ -83,6 +83,18 @@ class hyperkube(
       '/opt/hyperkube/bin': ;
     }
 
+    file { '/etc/kubernetes/config':
+      ensure  => file,
+      content => epp('hyperkube/sysconfig.epp', {
+
+          comment               => 'General Kubernetes Configuration',
+          environment_variables => {
+            'KUBE_LOGTOSTDERR' => '--alsologtostderr',
+            'KUBE_LOG_LEVEL'   => '',
+          },
+      }),
+    }
+
     file { "/opt/hyperkube/bin/hyperkube-${version}":
       ensure => file,
       user   => 'root',

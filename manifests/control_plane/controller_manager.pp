@@ -22,6 +22,8 @@
 class hyperkube::control_plane::controller_manager(
   Enum['present','absent'] $ensure = present,
 
+  String $version = $hyperkube::version,
+
   String $docker_registry = $hyperkube::docker_registry,
   String $docker_image = $hyperkube::docker_image,
   String $docker_image_tag = $hyperkube::docker_image_tag,
@@ -43,27 +45,51 @@ class hyperkube::control_plane::controller_manager(
   $parameters = {
   }
 
+  $parameter_string = $parameters.filter |$k,$v| { $v != undef }.map |$k,$v| {
+    if $v =~ Array {
+      "--${k}=${join($v, ',')}"
+    } elsif $v =~ Hash {
+      $reduced = $v.map |$mk, $mv| { "${mk}=${mv}" }
+      "--${k}=${reduced}"
+    } else {
+      "--${k}=${v}"
+    }
+  } + $_extra_parameters
+
   file { '/etc/kubernetes/controller-manager.conf':
     ensure  => file,
     content => epp('hyperkube/kubeconfig.epp', {
     }),
   }
 
-  file { '/etc/kubernetes/manifests/kube-controller-manager.yaml':
-    ensure  => file,
-    content => epp('hyperkube/control_plane/kube-controller-manager.yaml.epp', {
-        arguments  => $parameters.filter |$k,$v| { $v != undef }.map |$k,$v| {
-          if $v =~ Array {
-            "--${k}=${join($v, ',')}"
-          } elsif $v =~ Hash {
-            $reduced = $v.map |$mk, $mv| { "${mk}=${mv}" }
-            "--${k}=${reduced}"
-          } else {
-            "--${k}=${v}"
-          }
-        } + $_extra_parameters,
-        full_image => "${docker_registry}/${docker_image}:${docker_image_tag}",
-        port       => pick($port, 10252),
-    }),
+  if $hyperkube::packaging == 'docker' {
+    file { '/etc/kubernetes/manifests/kube-controller-manager.yaml':
+      ensure  => file,
+      content => epp('hyperkube/control_plane/kube-controller-manager.yaml.epp', {
+          arguments  => $parameter_string,
+          full_image => "${docker_registry}/${docker_image}:${docker_image_tag}",
+          port       => pick($port, 10252),
+      }),
+    }
+  } else {
+    file { '/etc/kubernetes/controller-manager':
+      ensure  => file,
+      content => epp('hyperkube/sysconfig.epp', {
+          comment               => 'Kubernetes Controller Manager Configuration',
+          environment_variables => {
+            'KUBE_CONTROLLER_MANAGER_ARGS' => $parameter_string,
+          },
+      }),
+    }
+
+    systemd::unit_file { 'kube-controller-manager.service':
+      content => epp('hyperkube/control_plane/kube-controller-manager.service.epp', {
+          $version => $version,
+      }),
+    }
+    ~> service { 'kube-controller-manager':
+      ensure => running,
+      enable => true,
+    }
   }
 }

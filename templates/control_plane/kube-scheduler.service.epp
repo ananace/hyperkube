@@ -3,22 +3,18 @@
   Boolean $etcd = false,
   | -%>
 [Unit]
-Description=Kubernetes API Server
+Description=Kubernetes Scheduler Plugin
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
-After=network.target
-<%- if $etcd { -%>
-After=etcd.service
-<%- } -%>
+After=kube-apiserver.service
 
 [Service]
-EnvironmentFile=-/etc/kubernetes/apiserver
+EnvironmentFile=-/etc/kubernetes/scheduler
 User=kube
-ExecStart=/opt/hyperkube/bin/hyperkube-<%= $version %> kube-apiserver \
+ExecStart=/opt/hyperkube/bin/hyperkube-<%= $version %> kube-scheduler \
             $KUBE_LOGTOSTDERR
             $KUBE_LOG_LEVEL
-            $KUBE_APISERVER_ARGS
+            $KUBE_SCHEDULER_ARGS
 Restart=on-failure
-Type=notify
 LimitNOFILE=65536
 
 [Install]
