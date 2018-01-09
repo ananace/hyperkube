@@ -82,6 +82,11 @@ class hyperkube(
       '/opt/hyperkube': ;
       '/opt/hyperkube/bin': ;
     }
+    file { '/var/run/kubernetes':
+      ensure => directory,
+      owner  => 'kube',
+      group  => 'kube',
+    }
 
     file { '/etc/kubernetes/config':
       ensure  => file,
