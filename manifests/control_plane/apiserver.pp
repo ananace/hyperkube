@@ -177,8 +177,8 @@ class hyperkube::control_plane::apiserver(
   Optional[Stdlib::Unixpath] $tls_private_key_file = undef,
   Optional[Array[String]] $tls_sni_cert_key = undef,
   Optional[Stdlib::Unixpath] $token_auth_file = undef,
-  Optional[Integer[0,5]] $v = undef,
-  Optional[Hash[String,Integer[0,5]]] $vmodule = undef,
+  Optional[Integer[0,10]] $v = undef,
+  Optional[Hash[String,Integer[0,10]]] $vmodule = undef,
   Optional[Boolean] $watch_cache = undef,
   Optional[Array[String]] $watch_cache_sizes = undef,
 
