@@ -120,7 +120,7 @@ class hyperkube::control_plane::controller_manager(
   Optional[Hyperkube::Duration] $node_monitor_period = undef,
   Optional[Hyperkube::Duration] $node_startup_grace_period = undef,
   Optional[Hyperkube::Duration] $pod_eviction_timeout = undef,
-  Optional[Integer[1,65535]] $port = undef,
+  Optional[Integer[1,65535]] $port = 10252,
   Optional[Boolean] $profiling = undef,
   Optional[Integer[0]] $pv_recycler_increment_timeout_nfs = undef,
   Optional[Integer[0]] $pv_recycler_minimum_timeout_hostpath = undef,

@@ -83,7 +83,7 @@ class hyperkube::control_plane::scheduler(
   Optional[Stdlib::Unixpath] $policy_config_file = undef,
   Optional[String] $policy_configmap = undef,
   Optional[String] $policy_configmap_namespace = undef,
-  Optional[Integer[1,65535]] $port = undef,
+  Optional[Integer[1,65535]] $port = 10251,
   Optional[Boolean] $profiling = undef,
   Optional[String] $scheduler_name = undef,
   Optional[Integer[0,5]] $stderrthreshold = undef,
