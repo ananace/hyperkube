@@ -3,6 +3,9 @@
 # Sets up a Kubernetes manifest for running an addon manager,
 # required for using cluster addons.
 #
+# NB: This control plane piece will always run as a kubelet
+#     manifest, never as a native binary.
+#
 # === Examples
 #
 # @example

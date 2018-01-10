@@ -28,6 +28,8 @@ class hyperkube::control_plane::scheduler(
   String $docker_image = $hyperkube::docker_image,
   String $docker_image_tag = pick($hyperkube::docker_image_tag, "v${version}"),
 
+  Stdlib::Unixpath $kubeconfig = '/etc/kubernetes/scheduler.conf',
+  String $master = 'http://localhost:8080',
   Optional[Integer[1,65535]] $port = undef,
 
   Optional[Variant[String,Array[String]]] $extra_parameters = undef,
@@ -50,13 +52,17 @@ class hyperkube::control_plane::scheduler(
       "--${k}=${join($v, ',')}"
     } elsif $v =~ Hash {
       $reduced = $v.map |$mk, $mv| { "${mk}=${mv}" }
-      "--${k}=${reduced}"
+      "--${k}=${join($reduced, ',')}"
     } else {
       "--${k}=${v}"
     }
   } + $_extra_parameters
 
   if $hyperkube::packaging == 'docker' {
+    hyperkube::kubeconfig { $kubeconfig:
+      embed_files => true,
+      in_cluster  => true,
+    }
     file { '/etc/kubernetes/scheduler.conf':
       ensure  => file,
       content => epp('hyperkube/kubeconfig.epp'),
@@ -70,6 +76,9 @@ class hyperkube::control_plane::scheduler(
       }),
     }
   } else {
+    hyperkube::kubeconfig { $kubeconfig:
+      server => $master,
+    }
     file { '/etc/kubernetes/scheduler':
       ensure  => file,
       content => epp('hyperkube/sysconfig.epp', {

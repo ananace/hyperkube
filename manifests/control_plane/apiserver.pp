@@ -354,7 +354,7 @@ class hyperkube::control_plane::apiserver(
       "--${k}=${join($v, ',')}"
     } elsif $v =~ Hash {
       $reduced = $v.map |$mk, $mv| { "${mk}=${mv}" }
-      "--${k}=${reduced}"
+      "--${k}=${join($reduced, ',')}"
     } else {
       "--${k}=${v}"
     }
