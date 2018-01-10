@@ -107,6 +107,10 @@ class hyperkube(
         pick($native_url, sprintf($native_url_template, $version)),
       ],
     }
+    file { '/opt/hyperkube/bin/kubectl':
+      ensure => link,
+      target => "/opt/hyperkube/bin/hyperkube-${hyperkube::version}",
+    }
   }
 
   file {
