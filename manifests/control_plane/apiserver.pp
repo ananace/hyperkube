@@ -29,11 +29,9 @@ class hyperkube::control_plane::apiserver(
   Hyperkube::CIDR $service_cluster_ip_range = '10.0.0.0/24',
 
   # Meta parameters
-  String $version = $hyperkube::version,
-
   String $docker_registry = $hyperkube::docker_registry,
   String $docker_image = $hyperkube::docker_image,
-  String $docker_image_tag = pick($hyperkube::docker_image_tag, "v${version}"),
+  String $docker_image_tag = pick($hyperkube::docker_image_tag, "v${hyperkube::version}"),
 
   # APIServer parameters
   Optional[Array[Enum['AlwaysAdmit', 'AlwaysDeny', 'AlwaysPullImages', 'DefaultStorageClass', 'DefaultTolerationSeconds', 'DenyEscalatingExec', 'DenyExecOnPrivileged', 'EventRateLimit', 'GenericAdmissionWebhook', 'ImagePolicyWebhook', 'InitialResources', 'Initializers', 'LimitPodHardAntiAffinityTopology', 'LimitRanger', 'NamespaceAutoProvision', 'NamespaceExists', 'NamespaceLifecycle', 'NodeRestriction', 'OwnerReferencesPermissionEnforcement', 'PersistentVolumeClaimResize', 'PersistentVolumeLabel', 'PodNodeSelector', 'PodPreset', 'PodSecurityPolicy', 'PodTolerationRestriction', 'Priority', 'ResourceQuota', 'SecurityContextDeny', 'ServiceAccount']]] $admission_control = undef, # lint:ignore:140chars
@@ -397,7 +395,7 @@ class hyperkube::control_plane::apiserver(
 
       file { '/opt/hyperkube/bin/kube-apiserver':
         ensure => link,
-        target => "/opt/hyperkube/bin/hyperkube-${version}",
+        target => "/opt/hyperkube/bin/hyperkube-${hyperkube::version}",
       }
       systemd::unit_file { 'kube-apiserver.service':
         content => epp('hyperkube/control_plane/kube-apiserver.service.epp'),

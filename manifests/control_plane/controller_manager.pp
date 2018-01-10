@@ -22,11 +22,9 @@
 class hyperkube::control_plane::controller_manager(
   Enum['present','absent'] $ensure = present,
 
-  String $version = $hyperkube::version,
-
   String $docker_registry = $hyperkube::docker_registry,
   String $docker_image = $hyperkube::docker_image,
-  String $docker_image_tag = pick($hyperkube::docker_image_tag, "v${version}"),
+  String $docker_image_tag = pick($hyperkube::docker_image_tag, "v${hyperkube::version}"),
 
   Stdlib::Unixpath $kubeconfig = '/etc/kubernetes/controller-manager.conf',
   String $master = 'http://localhost:8080',
@@ -89,7 +87,7 @@ class hyperkube::control_plane::controller_manager(
 
     file { '/opt/hyperkube/bin/kube-controller-manager':
       ensure => link,
-      target => "/opt/hyperkube/bin/hyperkube-${version}",
+      target => "/opt/hyperkube/bin/hyperkube-${hyperkube::version}",
     }
     systemd::unit_file { 'kube-controller-manager.service':
       content => epp('hyperkube/control_plane/kube-controller-manager.service.epp'),
