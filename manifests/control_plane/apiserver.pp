@@ -34,7 +34,7 @@ class hyperkube::control_plane::apiserver(
   String $docker_image_tag = pick($hyperkube::docker_image_tag, "v${hyperkube::version}"),
 
   # APIServer parameters
-  Optional[Array[Enum['AlwaysAdmit', 'AlwaysDeny', 'AlwaysPullImages', 'DefaultStorageClass', 'DefaultTolerationSeconds', 'DenyEscalatingExec', 'DenyExecOnPrivileged', 'EventRateLimit', 'GenericAdmissionWebhook', 'ImagePolicyWebhook', 'InitialResources', 'Initializers', 'LimitPodHardAntiAffinityTopology', 'LimitRanger', 'NamespaceAutoProvision', 'NamespaceExists', 'NamespaceLifecycle', 'NodeRestriction', 'OwnerReferencesPermissionEnforcement', 'PersistentVolumeClaimResize', 'PersistentVolumeLabel', 'PodNodeSelector', 'PodPreset', 'PodSecurityPolicy', 'PodTolerationRestriction', 'Priority', 'ResourceQuota', 'SecurityContextDeny', 'ServiceAccount']]] $admission_control = undef, # lint:ignore:140chars
+  Optional[Array[Variant[Enum['AlwaysAdmit', 'AlwaysDeny', 'AlwaysPullImages', 'DefaultStorageClass', 'DefaultTolerationSeconds', 'DenyEscalatingExec', 'DenyExecOnPrivileged', 'EventRateLimit', 'GenericAdmissionWebhook', 'ImagePolicyWebhook', 'InitialResources', 'Initializers', 'LimitPodHardAntiAffinityTopology', 'LimitRanger', 'NamespaceAutoProvision', 'NamespaceExists', 'NamespaceLifecycle', 'NodeRestriction', 'OwnerReferencesPermissionEnforcement', 'PersistentVolumeClaimResize', 'PersistentVolumeLabel', 'PodNodeSelector', 'PodPreset', 'PodSecurityPolicy', 'PodTolerationRestriction', 'Priority', 'ResourceQuota', 'SecurityContextDeny', 'ServiceAccount'],String]]] $admission_control = undef, # lint:ignore:140chars
   Optional[String] $admission_control_config_file = undef,
   Optional[Stdlib::Compat::Ip_address] $advertise_address = undef,
   Optional[Boolean] $allow_privileged = undef,
@@ -53,7 +53,7 @@ class hyperkube::control_plane::apiserver(
   Optional[Enum['batch','blocking']] $audit_webhook_mode = undef,
   Optional[Hyperkube::Duration] $authentication_token_webhook_cache_ttl = undef,
   Optional[Stdlib::Unixpath] $authentication_token_webhook_config_file = undef,
-  Optional[Array[Enum['AlwaysAllow','AlwaysDeny','ABAC','Webhook','RBAC','Node']]] $authorization_mode = undef,
+  Optional[Array[Variant[Enum['AlwaysAllow','AlwaysDeny','ABAC','Webhook','RBAC','Node'],String]]] $authorization_mode = undef,
   Optional[Stdlib::Unixpath] $authorization_policy_file = undef,
   Optional[Hyperkube::Duration] $authorization_webhook_cache_authorized_ttl = undef,
   Optional[Hyperkube::Duration] $authorization_webhook_cache_unauthorized_ttl = undef,
