@@ -4,7 +4,8 @@
 | -%>
 ### NB: File managed by Puppet.
 ###     Any changes will be overwritten.
-# <%= $comment %>
+#
+## <%= $comment %>
 #
 
 <%-
