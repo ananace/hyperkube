@@ -45,6 +45,8 @@ class hyperkube::control_plane::controller_manager(
   }
 
   $parameters = {
+    'kubeconfig' => $kubeconfig,
+    'port'       => $port,
   }
 
   $parameter_result = $parameters.filter |$k,$v| { $v != undef }.map |$k,$v| {
