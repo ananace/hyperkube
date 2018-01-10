@@ -14,11 +14,15 @@ define hyperkube::kubeconfig(
   if $in_cluster {
     $_ca_cert = pick($ca_cert, '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt')
     $_server = pick($server, 'https://kubernetes.default.svc')
-    $_token_file = pick($token_file, '/var/run/secrets/kubernetes.io/serviceaccount/token')
+    $_token = pick($token, $token_file, '/var/run/secrets/kubernetes.io/serviceaccount/token')
   } else {
     $_ca_cert = $ca_cert
     $_server = pick($server, 'http://localhost:8080')
-    $_token_file = $token_file
+    if $token_file {
+      $_token = $token_file
+    } else {
+      $_token = $token
+    }
   }
 
   if $token and $token_file {
@@ -40,7 +44,7 @@ define hyperkube::kubeconfig(
         ca_cert            => $_ca_cert,
         client_certificate => $client_certificate,
         client_key         => $client_key,
-        token              => pick($token, $_token_file),
+        token              => $_token,
         username           => $username,
         password           => $password,
     }),
