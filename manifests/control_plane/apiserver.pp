@@ -403,8 +403,12 @@ class hyperkube::control_plane::apiserver(
         content => epp('hyperkube/control_plane/kube-apiserver.service.epp'),
       }
       ~> service { 'kube-apiserver':
-        ensure => running,
-        enable => true,
+        ensure    => running,
+        enable    => true,
+        subscribe => [
+          File['/opt/hyperkube/bin/kube-apiserver'],
+          File['/etc/kubernetes/apiserver'],
+        ],
       }
     }
   }

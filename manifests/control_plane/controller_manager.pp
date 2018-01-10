@@ -95,8 +95,12 @@ class hyperkube::control_plane::controller_manager(
       content => epp('hyperkube/control_plane/kube-controller-manager.service.epp'),
     }
     ~> service { 'kube-controller-manager':
-      ensure => running,
-      enable => true,
+      ensure    => running,
+      enable    => true,
+      subscribe => [
+        File['/opt/hyperkube/bin/kube-controller-manager'],
+        File['/etc/kubernetes/controller-manager'],
+      ],
     }
   }
 }

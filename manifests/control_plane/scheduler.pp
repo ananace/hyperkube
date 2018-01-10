@@ -99,8 +99,12 @@ class hyperkube::control_plane::scheduler(
       content => epp('hyperkube/control_plane/kube-scheduler.service.epp'),
     }
     ~> service { 'kube-scheduler':
-      ensure => running,
-      enable => true,
+      ensure    => running,
+      enable    => true,
+      subscribe => [
+        File['/opt/hyperkube/bin/kube-scheduler'],
+        File['/etc/kubernetes/scheduler'],
+      ],
     }
   }
 }
