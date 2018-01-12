@@ -1,4 +1,4 @@
-class hyperkube::node::docker(
+class hyperkube::node::kubelet(
 ) {
   docker::run { 'kubelet':
     command         => join([
