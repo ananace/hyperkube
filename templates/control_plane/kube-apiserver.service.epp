@@ -3,6 +3,7 @@ Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 After=network.target etcd.service
 
 [Service]
+EnvironmentFile=-/etc/kubernetes/common
 EnvironmentFile=-/etc/kubernetes/apiserver
 User=kube
 ExecStart=/opt/hyperkube/bin/kube-apiserver \

@@ -88,7 +88,7 @@ class hyperkube(
       group  => 'kube',
     }
 
-    file { '/etc/kubernetes/config':
+    file { '/etc/kubernetes/common':
       ensure  => file,
       content => epp('hyperkube/sysconfig.epp', {
           comment               => 'General Kubernetes Configuration',

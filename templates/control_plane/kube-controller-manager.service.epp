@@ -4,6 +4,7 @@ Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 After=kube-apiserver.service
 
 [Service]
+EnvironmentFile=-/etc/kubernetes/common
 EnvironmentFile=-/etc/kubernetes/controller-manager
 User=kube
 ExecStart=/opt/hyperkube/bin/kube-controller-manager \
