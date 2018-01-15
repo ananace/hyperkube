@@ -1,0 +1,20 @@
+[Unit]
+Description=Kubernetes Kubelet Server
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+After=docker.service
+Requires=docker.service
+
+[Service]
+WorkingDirectory=/var/lib/kubelet
+EnvironmentFile=-/etc/kubernetes/common
+EnvironmentFile=-/etc/kubernetes/kubelet
+User=kube
+ExecStart=/opt/hyperkube/bin/kubelet \
+            $KUBE_LOGTOSTDERR \
+            $KUBE_LOG_LEVEL \
+            $KUBE_SCHEDULER_ARGS
+Restart=on-failure
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
