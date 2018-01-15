@@ -82,11 +82,11 @@ class hyperkube(
       '/opt/hyperkube': ;
       '/opt/hyperkube/bin': ;
     }
-    # file { '/var/run/kubernetes':
-    #   ensure => directory,
-    #   owner  => 'kube',
-    #   group  => 'kube',
-    # }
+    file { '/var/run/kubernetes':
+      ensure => directory,
+      owner  => 'kube',
+      group  => 'kube',
+    }
 
     file { '/etc/kubernetes/common':
       ensure  => file,
@@ -119,9 +119,9 @@ class hyperkube(
 
     '/etc/cni': ;
     '/etc/cni/net.d': ;
-    # '/etc/kubernetes':
-    #   purge   => true,
-    #   recurse => true;
+    '/etc/kubernetes':
+      purge   => true,
+      recurse => true;
     '/etc/kubernetes/manifests':
       purge   => true,
       recurse => true;
