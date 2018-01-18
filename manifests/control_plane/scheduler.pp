@@ -200,10 +200,6 @@ class hyperkube::control_plane::scheduler(
       embed_files => true,
       in_cluster  => true,
     }
-    file { '/etc/kubernetes/scheduler.conf':
-      ensure  => file,
-      content => epp('hyperkube/kubeconfig.epp'),
-    }
     file { '/etc/kubernetes/manifests/kube-scheduler.yaml':
       ensure  => file,
       content => epp('hyperkube/control_plane/kube-scheduler.yaml.epp', {
