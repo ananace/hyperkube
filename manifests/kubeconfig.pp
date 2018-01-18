@@ -44,6 +44,7 @@ define hyperkube::kubeconfig(
         ca_cert            => $_ca_cert,
         client_certificate => $client_certificate,
         client_key         => $client_key,
+        embed              => $embed_files,
         token              => $_token,
         username           => $username,
         password           => $password,
