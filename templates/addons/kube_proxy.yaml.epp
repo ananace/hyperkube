@@ -61,7 +61,7 @@ spec:
         - /bin/sh
         - -c
         - kube-proxy --cluster-cidr=<%= $cluster_cidr %> --resource-container="" --oom-scode-adj=-998 <%= $_extra_params %> 1>>/var/log/kube-proxy.log 2>&1
-        image: <%= $full_image %>
+        image: <%= $docker_registry %>/<%= $docker_image %>:<%= $docker_image_tag %>
         imagePullPolicy: IfNotPresent
         name: kube-proxy
         resources:
@@ -92,7 +92,9 @@ spec:
         name: var-log
       - hostPath:
           path: /run/xtables.lock
+<%- if versioncmp($docker_image_tag[1,-1], '1.8.0') >= 0 { -%>
           type: FileOrCreate
+<%- } -%>
         name: xtables-lock
       - hostPath:
           path: /lib/modules
