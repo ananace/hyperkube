@@ -54,8 +54,8 @@ define hyperkube::kubeconfig(
   if $embed_files {
     if $_ca_cert {
       exec { "Embed CA Cert into ${path}":
-        command   => "sed -e 's!${_ca_cert}!\$(cat \"${_ca_cert}\" | base64 -w0)!' -i \"${path}\"",
-        onlyif    => "grep ${_ca_cert} \"${path}\"",
+        command   => "sed -e \"s!${_ca_cert}!\$(cat '${_ca_cert}' | base64 -w0)!\" -i '${path}'",
+        onlyif    => "grep ${_ca_cert} '${path}'",
         path      => '/bin:/usr/bin',
         subscribe => File[$path],
       }
@@ -63,8 +63,8 @@ define hyperkube::kubeconfig(
     }
     if $client_certificate {
       exec { "Embed Client Cert into ${path}":
-        command   => "sed -e 's!${client_certificate}!\$(cat \"${client_certificate}\" | base64 -w0)!' -i \"${path}\"",
-        onlyif    => "grep ${client_certificate} \"${path}\"",
+        command   => "sed -e \"s!${client_certificate}!\$(cat '${client_certificate}' | base64 -w0)!\" -i '${path}'",
+        onlyif    => "grep ${client_certificate} '${path}'",
         path      => '/bin:/usr/bin',
         subscribe => File[$path],
       }
@@ -72,8 +72,8 @@ define hyperkube::kubeconfig(
     }
     if $client_key {
       exec { "Embed Client Key into ${path}":
-        command   => "sed -e 's!${client_key}!\$(cat \"${client_key}\" | base64 -w0)!' -i \"${path}\"",
-        onlyif    => "grep ${client_key} \"${path}\"",
+        command   => "sed -e \"s!${client_key}!\$(cat '${client_key}' | base64 -w0)!\" -i '${path}'",
+        onlyif    => "grep ${client_key} '${path}'",
         path      => '/bin:/usr/bin',
         subscribe => File[$path],
       }
@@ -82,8 +82,8 @@ define hyperkube::kubeconfig(
   }
   if $token_file {
     exec { "Embed Token File into ${path}":
-      command   => "sed -e 's!${token_file}!\$(cat \"${token_file}\")!' -i \"${path}\"",
-      onlyif    => "grep ${token_file} \"${path}\"",
+      command   => "sed -e \"s!${token_file}!\$(cat '${token_file}')!\" -i '${path}'",
+      onlyif    => "grep ${token_file} '${path}'",
       path      => '/bin:/usr/bin',
       subscribe => File[$path],
     }
