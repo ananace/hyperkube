@@ -62,7 +62,7 @@ define hyperkube::kubeconfig(
       File <| path == $_ca_cert |> ~> File[$path]
     }
     if $client_certificate {
-      exec { "Embed CA Cert into ${path}":
+      exec { "Embed Client Cert into ${path}":
         command   => "sed -e 's!${client_certificate}!\$(cat \"${client_certificate}\" | base64 -w0)!' -i \"${path}\"",
         onlyif    => "grep ${client_certificate} \"${path}\"",
         path      => '/bin:/usr/bin',
@@ -71,7 +71,7 @@ define hyperkube::kubeconfig(
       File <| path == $client_certificate |> ~> File[$path]
     }
     if $client_key {
-      exec { "Embed CA Cert into ${path}":
+      exec { "Embed Client Key into ${path}":
         command   => "sed -e 's!${client_key}!\$(cat \"${client_key}\" | base64 -w0)!' -i \"${path}\"",
         onlyif    => "grep ${client_key} \"${path}\"",
         path      => '/bin:/usr/bin',
