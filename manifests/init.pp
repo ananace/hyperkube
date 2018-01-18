@@ -27,7 +27,7 @@
 # Copyright 2017 Linköping University
 #
 class hyperkube(
-  Enum['docker','native'] $packaging = 'docker',
+  Enum['docker','native'] $packaging = 'native',
   String $version = '1.8.4',
 
   String $docker_registry = 'gcr.io/google_containers',
