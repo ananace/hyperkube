@@ -1,9 +1,18 @@
 <%- |
   Hyperkube::CIDR $cluster_cidr,
-  String $extra_params = '',
-  String $full_image = 'gcr.io/google_containers/kube-proxy-amd64:v1.8.4',
-  String $server = 'https://kubernetes.default.svc',
+  String $request_cpu = '250m',
+  String $docker_registry = 'gcr.io/google_containers',
+  String $docker_image = 'kube-proxy',
+  String $docker_image_tag = pick($hyperkube::docker_image_tag, "v${hyperkube::version}"),
+  Optional[Variant[String,Array[String]]] $extra_params = undef,
 | -%>
+<%-
+if $extra_params ~= Array[String] {
+  $_extra_params = join($extra_params, ' ')
+} else
+  $_extra_params = $extra_params
+}
+-%>
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -28,40 +37,9 @@ roleRef:
   name: system:node-proxier
   apiGroup: rbac.authorization.k8s.io
 ---
-apiVersion: v1
-data:
-  kubeconfig.conf: |
-    apiVersion: v1
-    kind: Config
-    clusters:
-    - cluster:
-        certificate-authority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        server: <%= $server %>
-      name: default
-    contexts:
-    - context:
-        cluster: default
-        namespace: default
-        user: default
-      name: default
-    current-context: default
-    users:
-    - name: default
-      user:
-        tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-kind: ConfigMap
-metadata:
-  creationTimestamp: null
-  labels:
-    app: kube-proxy
-    addonmanager.kubernetes.io/mode: EnsureExists
-  name: kube-proxy
-  namespace: kube-system
----
-apiVersion: apps/v1beta2
+apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
-  creationTimestamp: null
   labels:
     k8s-app: kube-proxy
     addonmanager.kubernetes.io/mode: Reconcile
@@ -73,40 +51,45 @@ spec:
       k8s-app: kube-proxy
   template:
     metadata:
-      creationTimestamp: null
       labels:
         k8s-app: kube-proxy
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       containers:
       - command:
-        - /usr/local/bin/kube-proxy
-        - --kubeconfig=/var/lib/kube-proxy/kubeconfig.conf
+        - /bin/sh
+        - -c
+        - kube-proxy --cluster-cidr=<%= $cluster_cidr %> --resource-container="" --oom-scode-adj=-998 <%= $_extra_params %> 1>>/var/log/kube-proxy.log 2>&1
         image: <%= $full_image %>
         imagePullPolicy: IfNotPresent
         name: kube-proxy
-        resources: {}
+        resources:
+          requests:
+            cpu: <%= $request_cpu %>
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /var/lib/kube-proxy
-          name: kube-proxy
+        - mountPath: /var/log
+          name: var-log
+          readOnly: false
         - mountPath: /run/xtables.lock
           name: xtables-lock
+          readOnly: false
         - mountPath: /lib/modules
           name: lib-modules
           readOnly: true
       hostNetwork: true
       serviceAccountName: kube-proxy
       tolerations:
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/master
-      - effect: NoSchedule
-        key: node.cloudprovider.kubernetes.io/uninitialized
-        value: "true"
+      - operator: "Exists"
+        effect: "NoExecute"
+      - operator: "Exists"
+        effect: "NoSchedule"
       volumes:
-      - configMap:
-          name: kube-proxy
-        name: kube-proxy
+      - hostPath:
+          path: /var/log
+        name: var-log
       - hostPath:
           path: /run/xtables.lock
           type: FileOrCreate
@@ -116,3 +99,5 @@ spec:
         name: lib-modules
   updateStrategy:
     type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 10%
