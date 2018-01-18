@@ -1,6 +1,8 @@
 class hyperkube::node::kubelet(
   Variant[Hyperkube::URI,Array[Hyperkube::URI]] $api_servers = ($hyperkube::packaging ? { 'docker' => 'https://kubernetes.default.svc', default => undef }),
 
+  Optional[String] $ca_cert = undef,
+
   # Meta parameters
   String $docker_registry = $hyperkube::docker_registry,
   String $docker_image = $hyperkube::docker_image,
@@ -363,6 +365,7 @@ class hyperkube::node::kubelet(
   } else {
     hyperkube::kubeconfig { $kubeconfig:
       server             => $api_servers,
+      ca_cert            => $ca_cert,
       client_certificate => $tls_cert_file,
       client_key         => $tls_private_key_file,
     }
