@@ -8,7 +8,6 @@ Requires=docker.service
 WorkingDirectory=/var/lib/kubelet
 EnvironmentFile=-/etc/kubernetes/common
 EnvironmentFile=-/etc/kubernetes/kubelet
-User=kube
 ExecStart=/opt/hyperkube/bin/kubelet \
             $KUBE_LOGTOSTDERR \
             $KUBE_LOG_LEVEL \
