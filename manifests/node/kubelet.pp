@@ -1,4 +1,6 @@
 class hyperkube::node::kubelet(
+  Variant[Hyperkube::URI,Array[Hyperkube::URI]] $api_servers = ($hyperkube::packaging ? { 'docker' => 'https://kubernetes.default.svc', default => undef }),
+
   # Meta parameters
   String $docker_registry = $hyperkube::docker_registry,
   String $docker_image = $hyperkube::docker_image,
@@ -103,7 +105,7 @@ class hyperkube::node::kubelet(
   Optional[Integer[0]] $kube_api_qps = undef,
   Optional[Hash[String,String]] $kube_reserved = undef,
   Optional[String] $kube_reserved_cgroup = undef,
-  Optional[Stdlib::Unixpath] $kubeconfig = undef,
+  Stdlib::Unixpath $kubeconfig = '/etc/kubernetes/kubelet.conf',
   Optional[String] $kubelet_cgroups = undef,
   Optional[Stdlib::Unixpath] $lock_file = undef,
   Optional[String] $log_backtrace_at = undef,
@@ -127,7 +129,7 @@ class hyperkube::node::kubelet(
   Optional[Integer[-1000,1000]] $oom_score_adj = undef,
   Optional[Hyperkube::CIDR] $pod_cidr = undef,
   Optional[String] $pod_infra_container_image = undef,
-  Optional[Stdlib::Unixpath] $pod_manifest_path = undef,
+  Optional[Stdlib::Unixpath] $pod_manifest_path = '/etc/kubernetes/manifests',
   Optional[Integer[0]] $pods_per_core = undef,
   Optional[Integer[1,65535]] $port = undef,
   Optional[Boolean] $protect_kernel_defaults = undef,
@@ -166,7 +168,7 @@ class hyperkube::node::kubelet(
   Optional[Stdlib::Unixpath] $volume_plugin_dir = undef,
   Optional[Hyperkube::Duration] $volume_stats_agg_period = undef,
 
-  Optional[Variant[String,Array[String]]] $extra_parameters = undef,
+  Optional[Variant[String,Array[String]]] $_extra_parameters = undef,
 ) {
   $parameters = {
     'address'                                           => $address,
@@ -344,22 +346,26 @@ class hyperkube::node::kubelet(
   } + $_extra_parameters
 
   if $hyperkube::packaging == 'docker' {
+    hyperkube::kubeconfig { $kubeconfig:
+      server      => $api_servers,
+      embed_files => true,
+      in_cluster  => true,
+    }
     docker::run { 'kubelet':
       command         => join([
           '/kubelet',
-          '--address=0.0.0.0',
-          '--kubeconfig=',
-          '--pod-manifest-path=/etc/kubernetes/manifests',
-          '--cluster-dns=',
-          '--cluster-domain=',
-          '--v=2',
-      ], ' '),
+      ] + $parameter_result, ' '),
       image           => "${hyperkube::registry}/${hyperkube::image}:${hyperkube::image_tag}",
       pull_on_start   => false,
       restart_service => true,
       volumes         => [ '/etc/cni', '/etc/kubernetes', '/opt/cni' ],
     }
   } else {
+    hyperkube::kubeconfig { $kubeconfig:
+      server             => $api_servers,
+      client_certificate => $tls_cert_file,
+      client_key         => $tls_private_key_file,
+    }
     file { '/etc/kubernetes/kubelet':
       ensure  => file,
       content => epp('hyperkube/sysconfig.epp', {

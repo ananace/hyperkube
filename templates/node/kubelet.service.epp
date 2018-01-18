@@ -12,7 +12,7 @@ User=kube
 ExecStart=/opt/hyperkube/bin/kubelet \
             $KUBE_LOGTOSTDERR \
             $KUBE_LOG_LEVEL \
-            $KUBE_SCHEDULER_ARGS
+            $KUBE_KUBELET_ARGS
 Restart=on-failure
 KillMode=process
 
