@@ -7,7 +7,7 @@
   Optional[Variant[String,Array[String]]] $extra_params = undef,
 | -%>
 <%-
-if $extra_params ~= Array[String] {
+if $extra_params =~ Array[String] {
   $_extra_params = join($extra_params, ' ')
 } else
   $_extra_params = $extra_params
