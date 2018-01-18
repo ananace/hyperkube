@@ -1,5 +1,4 @@
 class hyperkube::node::kubelet(
-  Variant[Hyperkube::URI,Array[Hyperkube::URI]] $api_servers = ($hyperkube::packaging ? { 'docker' => 'https://kubernetes.default.svc', default => undef }),
 
   Optional[String] $ca_cert = undef,
   Optional[Boolean] $kubeconfig_embed = undef,
@@ -15,6 +14,7 @@ class hyperkube::node::kubelet(
   Optional[Boolean] $alsologtostderr = undef,
   Optional[Boolean] $anonymous_auth = undef,
   Optional[Integer[0]] $application_metrics_count_limit = undef,
+  Optional[Variant[Hyperkube::URI,Array[Hyperkube::URI]]] $api_servers = undef,
   Optional[Boolean] $authentication_token_webhook = undef,
   Optional[Hyperkube::Duration] $authentication_token_webhook_cache_ttl = undef,
   Optional[Array[Variant[Enum['AlwaysAllow','AlwaysDeny','ABAC','Webhook','RBAC','Node'],String]]] $authorization_mode = undef,
@@ -179,6 +179,7 @@ class hyperkube::node::kubelet(
     'allow-verification-with-non-compliant-keys'        => $allow_verification_with_non_compliant_keys,
     'alsologtostderr'                                   => $alsologtostderr,
     'anonymous-auth'                                    => $anonymous_auth,
+    'api-servers'                                       => $api_servers,
     'application-metrics-count-limit'                   => $application_metrics_count_limit,
     'authentication-token-webhook'                      => $authentication_token_webhook,
     'authentication-token-webhook-cache-ttl'            => $authentication_token_webhook_cache_ttl,
@@ -348,9 +349,19 @@ class hyperkube::node::kubelet(
     }
   } + $_extra_parameters
 
+  if $api_servers {
+    if $api_servers =~ Array[String] {
+      $_master = $api_servers[0]
+    } else {
+      $_master = $api_servers
+    }
+  } else {
+    $_master = ($hyperkube::packaging ? { 'docker' => 'https://kubernetes.default.svc', default => undef })
+  }
+
   if $hyperkube::packaging == 'docker' {
     hyperkube::kubeconfig { $kubeconfig:
-      server      => $api_servers,
+      server      => $_master,
       embed_files => true,
       in_cluster  => true,
     }
@@ -365,7 +376,7 @@ class hyperkube::node::kubelet(
     }
   } else {
     hyperkube::kubeconfig { $kubeconfig:
-      server             => $api_servers,
+      server             => $_master,
       ca_cert            => $ca_cert,
       client_certificate => $tls_cert_file,
       client_key         => $tls_private_key_file,
