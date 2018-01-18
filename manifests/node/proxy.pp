@@ -155,16 +155,16 @@ class hyperkube::node::proxy(
     'vmodule'                                    => $vmodule,
   }
 
-  $parameter_result = $parameters.filter |$k,$v| { $v != undef }.map |$k,$v| {
-    if $v =~ Array {
-      "--${k}=${join($v, ',')}"
-    } elsif $v =~ Hash {
-      $reduced = $v.map |$mk, $mv| { "${mk}=${mv}" }
-      "--${k}=${join($reduced, ',')}"
-    } else {
-      "--${k}=${v}"
-    }
-  } + $_extra_parameters
+  $parameter_result = ($parameters.filter |$k,$v| { $v != undef }.map |$k,$v| {
+      if $v =~ Array {
+        "--${k}=${join($v, ',')}"
+      } elsif $v =~ Hash {
+        $reduced = $v.map |$mk, $mv| { "${mk}=${mv}" }
+        "--${k}=${join($reduced, ',')}"
+      } else {
+        "--${k}=${v}"
+      }
+  } + $_extra_parameters).filter |$k| { $k != undef }
 
   if $hyperkube::packaging == 'docker' {
     warn('Applying hyperkube::node::proxy on a docker hosted cluster, this is not supported.')
