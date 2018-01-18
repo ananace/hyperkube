@@ -179,7 +179,6 @@ class hyperkube::node::kubelet(
     'allow-verification-with-non-compliant-keys'        => $allow_verification_with_non_compliant_keys,
     'alsologtostderr'                                   => $alsologtostderr,
     'anonymous-auth'                                    => $anonymous_auth,
-    'api-servers'                                       => $api_servers,
     'application-metrics-count-limit'                   => $application_metrics_count_limit,
     'authentication-token-webhook'                      => $authentication_token_webhook,
     'authentication-token-webhook-cache-ttl'            => $authentication_token_webhook_cache_ttl,
