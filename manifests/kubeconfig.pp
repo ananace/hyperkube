@@ -29,7 +29,7 @@ define hyperkube::kubeconfig(
     fail("You can't specify both a token and token file for a kubeconfig")
   } elsif ($username or $password) and not ($username and $password) {
     fail('You need to specify both a username and a password if using username + password auth')
-  } elsif ($client_certificate or $client_key) and not ($client_certificate and $client_key) {
+  } elsif ($client_certificate or $client_key) and !($client_certificate and $client_key) {
     fail('You need to specify both a certificate and key if using SSL auth')
   }
 
