@@ -60,7 +60,7 @@ spec:
       - command:
         - /bin/sh
         - -c
-        - kube-proxy --cluster-cidr=<%= $cluster_cidr %> --resource-container="" --oom-scode-adj=-998 <%= $_extra_params %> 1>>/var/log/kube-proxy.log 2>&1
+        - kube-proxy --cluster-cidr=<%= $cluster_cidr %> --resource-container="" --oom-score-adj=-998 <%= $_extra_params %> 1>>/var/log/kube-proxy.log 2>&1
         image: <%= $docker_registry %>/<%= $docker_image %>:<%= $docker_image_tag %>
         imagePullPolicy: IfNotPresent
         name: kube-proxy
