@@ -80,13 +80,13 @@ define hyperkube::kubeconfig(
       File <| path == $client_key |> ~> File[$path]
     }
   }
-  if $_token_file {
+  if $token_file {
     exec { "Embed Token File into ${path}":
-      command   => "sed -e 's!${_token_file}!\$(cat \"${_token_file}\")!' -i \"${path}\"",
-      onlyif    => "grep ${_token_file} \"${path}\"",
+      command   => "sed -e 's!${token_file}!\$(cat \"${token_file}\")!' -i \"${path}\"",
+      onlyif    => "grep ${token_file} \"${path}\"",
       path      => '/bin:/usr/bin',
       subscribe => File[$path],
     }
-    File <| path == $_token_file |> ~> File[$path]
+    File <| path == $token_file |> ~> File[$path]
   }
 }

@@ -2,6 +2,7 @@ class hyperkube::node::kubelet(
   Variant[Hyperkube::URI,Array[Hyperkube::URI]] $api_servers = ($hyperkube::packaging ? { 'docker' => 'https://kubernetes.default.svc', default => undef }),
 
   Optional[String] $ca_cert = undef,
+  Optional[Boolean] $kubeconfig_embed = undef,
 
   # Meta parameters
   String $docker_registry = $hyperkube::docker_registry,
@@ -368,6 +369,7 @@ class hyperkube::node::kubelet(
       ca_cert            => $ca_cert,
       client_certificate => $tls_cert_file,
       client_key         => $tls_private_key_file,
+      embed_files        => $kubeconfig_embed,
     }
     file { '/etc/kubernetes/kubelet':
       ensure  => file,
