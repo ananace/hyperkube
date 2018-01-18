@@ -135,6 +135,7 @@ class hyperkube::node::proxy(
     'loglevel'                                   => $loglevel,
     'logtostderr'                                => $logtostderr,
     'machine-id-file'                            => $machine_id_file,
+    'master'                                     => $master,
     'masquerade-all'                             => $masquerade_all,
     'metrics-bind-address'                       => $metrics_bind_address,
     'oom-score-adj'                              => $oom_score_adj,
