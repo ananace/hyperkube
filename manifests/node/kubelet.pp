@@ -1,12 +1,13 @@
 class hyperkube::node::kubelet(
-
   Optional[String] $ca_cert = undef,
   Optional[Boolean] $kubeconfig_embed = undef,
 
   # Meta parameters
+  String $version = $hyperkube::version,
+
   String $docker_registry = $hyperkube::docker_registry,
   String $docker_image = $hyperkube::docker_image,
-  String $docker_image_tag = pick($hyperkube::docker_image_tag, "v${hyperkube::version}"),
+  String $docker_image_tag = pick($hyperkube::docker_image_tag, "v${version}"),
 
   Optional[String] $address = undef,
   Optional[Boolean] $allow_privileged = undef,
@@ -179,7 +180,6 @@ class hyperkube::node::kubelet(
     'allow-verification-with-non-compliant-keys'        => $allow_verification_with_non_compliant_keys,
     'alsologtostderr'                                   => $alsologtostderr,
     'anonymous-auth'                                    => $anonymous_auth,
-    'api-servers'                                       => $api_servers,
     'application-metrics-count-limit'                   => $application_metrics_count_limit,
     'authentication-token-webhook'                      => $authentication_token_webhook,
     'authentication-token-webhook-cache-ttl'            => $authentication_token_webhook_cache_ttl,
