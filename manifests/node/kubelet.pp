@@ -3,6 +3,7 @@ class hyperkube::node::kubelet(
   Optional[Boolean] $kubeconfig_embed = undef,
 
   # Meta parameters
+  Enum['docker','native'] $packaging = $hyperkube::packaging,
   String $version = $hyperkube::version,
 
   String $docker_registry = $hyperkube::docker_registry,
@@ -40,7 +41,7 @@ class hyperkube::node::kubelet(
   Optional[Stdlib::Unixpath] $container_hints = undef,
   Optional[Variant[Enum['rkt','docker'],String]] $container_runtime = undef,
   Optional[Hyperkube::URI] $container_runtime_endpoint = undef,
-  Optional[Boolean] $containerized = ($hyperkube::packaging == 'docker'),
+  Optional[Boolean] $containerized = ($packaging == 'docker'),
   Optional[Boolean] $contention_profiling = undef,
   Optional[Boolean] $cpu_cfs_quota = undef,
   Optional[Integer[0]] $default_not_ready_toleration_seconds = undef,
@@ -356,10 +357,10 @@ class hyperkube::node::kubelet(
       $_master = $api_servers
     }
   } else {
-    $_master = ($hyperkube::packaging ? { 'docker' => 'https://kubernetes.default.svc', default => undef })
+    $_master = ($packaging ? { 'docker' => 'https://kubernetes.default.svc', default => undef })
   }
 
-  if $hyperkube::packaging == 'docker' {
+  if $packaging == 'docker' {
     hyperkube::kubeconfig { $kubeconfig:
       server      => $_master,
       embed_files => true,
@@ -369,7 +370,7 @@ class hyperkube::node::kubelet(
       command         => join([
           '/kubelet',
       ] + $parameter_result, ' '),
-      image           => "${hyperkube::registry}/${hyperkube::image}:${hyperkube::image_tag}",
+      image           => "${docker_registry}/${docker_image}:${docker_image_tag}",
       pull_on_start   => false,
       restart_service => true,
       volumes         => [ '/etc/cni', '/etc/kubernetes', '/opt/cni' ],
@@ -397,12 +398,19 @@ class hyperkube::node::kubelet(
       group  => 'kube',
     }
 
-    file { '/opt/hyperkube/bin/kubelet':
+    if !defined(Hyperkube::Binary[$version]) {
+      hyperkube::binary { $version:
+        ensure => present,
+      }
+    }
+    file { "/opt/hyperkube/${version}/kubelet":
       ensure => link,
-      target => "/opt/hyperkube/bin/hyperkube-${hyperkube::version}",
+      target => "/opt/hyperkube/${version}/hyperkube",
     }
     systemd::unit_file { 'kubelet.service':
-      content => epp('hyperkube/node/kubelet.service.epp'),
+      content => epp('hyperkube/node/kubelet.service.epp', {
+          version => $version,
+      }),
     }
     ~> service { 'kubelet':
       ensure    => running,

@@ -1,3 +1,6 @@
+<%- |
+  String $version,
+| -%>
 [Unit]
 Description=Kubernetes Kubelet Server
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
@@ -8,7 +11,7 @@ Requires=docker.service
 WorkingDirectory=/var/lib/kubelet
 EnvironmentFile=-/etc/kubernetes/common
 EnvironmentFile=-/etc/kubernetes/kubelet
-ExecStart=/opt/hyperkube/bin/kubelet \
+ExecStart=/opt/hyperkube/<%= $version %>/kubelet \
             $KUBE_LOGTOSTDERR \
             $KUBE_LOG_LEVEL \
             $KUBE_KUBELET_ARGS

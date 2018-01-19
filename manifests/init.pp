@@ -32,6 +32,7 @@ class hyperkube(
 
   String $docker_registry = 'gcr.io/google_containers',
   String $docker_image = 'hyperkube',
+  String $docker_image_tag = "v${version}",
 
   String $native_url_template = 'http://storage.googleapis.com/kubernetes-release/release/v%s/bin/linux/amd64/hyperkube',
 
@@ -40,7 +41,6 @@ class hyperkube(
   Boolean $manage_docker = true,
 
   Optional[String] $api_server = undef,
-  Optional[String] $docker_image_tag = undef,
   Optional[String] $native_url = undef,
   Optional[String] $native_sha = undef,
 
@@ -55,7 +55,7 @@ class hyperkube(
       docker::image { 'hyperkube':
         ensure    => present,
         image     => "${docker_registry}/${docker_image}",
-        image_tag => pick($docker_image_tag, "v${version}"),
+        image_tag => $docker_image_tag,
       }
     }
   } else {
@@ -99,17 +99,17 @@ class hyperkube(
       }),
     }
 
-    file { "/opt/hyperkube/bin/hyperkube-${version}":
-      ensure => file,
-      mode   => '0755',
-      source => [
-        "/opt/hyperkube/bin/hyperkube-${version}",
-        pick($native_url, sprintf($native_url_template, $version)),
-      ],
+    hyperkube::binary { $version:
+      native_url_template => $native_url_template,
     }
-    file { '/opt/hyperkube/bin/kubectl':
-      ensure => link,
-      target => "/opt/hyperkube/bin/hyperkube-${hyperkube::version}",
+    file {
+      default:
+        ensure => link,
+        target => "/opt/hyperkube/${version}/hyperkube";
+
+      "/opt/hyperkube/bin/hyperkube-${version}": ;
+      '/opt/hyperkube/bin/kubectl': ;
+      '/usr/local/bin/kubectl': ;
     }
   }
 
