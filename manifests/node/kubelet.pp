@@ -416,7 +416,7 @@ class hyperkube::node::kubelet(
       ensure    => running,
       enable    => true,
       subscribe => [
-        File['/opt/hyperkube/bin/kubelet'],
+        File["/opt/hyperkube/${version}/kubelet"],
         File['/etc/kubernetes/kubelet'],
       ],
     }
