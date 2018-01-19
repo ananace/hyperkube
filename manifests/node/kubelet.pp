@@ -341,7 +341,7 @@ class hyperkube::node::kubelet(
   }
 
   $parameter_result = $parameters.filter |$k,$v| {
-    $v != undef and (versioncmp($version, '1.8.0') < 0 or k != 'api-servers')
+    $v != undef and (versioncmp($version, '1.8.0') < 0 or $k != 'api-servers')
   }.map |$k,$v| {
     if $v =~ Array {
       "--${k}=${join($v, ',')}"
