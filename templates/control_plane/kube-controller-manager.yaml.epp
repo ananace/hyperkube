@@ -1,0 +1,74 @@
+<%- |
+  String $full_image,
+  Boolean $hyperkube = true,
+  Array[String] $arguments = [],
+  Integer[1,65535] $port = 10252,
+| -%>
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    scheduler.alpha.kubernetes.io/critical-pod: ""
+  creationTimestamp: null
+  labels:
+    component: kube-controller-manager
+    tier: control-plane
+  name: kube-controller-manager
+  namespace: kube-system
+spec:
+  containers:
+    - command:
+<%- if $hyperkube { -%>
+        - /hyperkube
+<%- } -%>
+        - kube-controller-manager
+        - --port=<%= $port %>
+        - --kubeconfig=/etc/kubernetes/controller-manager.conf
+        - --service-account-private-key-file=/etc/kubernetes/pki/sa.key
+        - --cluster-signing-cert-file=/etc/kubernetes/pki/ca.crt
+        - --cluster-signing-key-file=/etc/kubernetes/pki/ca.key
+        - --address=127.0.0.1
+        - --leader-elect=true
+        - --controllers=*,bootstrapsigner,tokencleaner
+        - --use-service-account-credentials=true
+        - --root-ca-file=/etc/kubernetes/pki/ca.crt
+      image: gcr.io/google_containers/kube-controller-manager-amd64:v1.8.4
+      livenessProbe:
+        failureThreshold: 8
+        httpGet:
+          host: 127.0.0.1
+          path: /healthz
+          port: <%= $port %>
+          scheme: HTTP
+        initialDelaySeconds: 15
+        timeoutSeconds: 15
+      name: kube-controller-manager
+      resources:
+        requests:
+          cpu: 200m
+      volumeMounts:
+        - mountPath: /etc/kubernetes/pki
+          name: k8s-certs
+          readOnly: true
+        - mountPath: /etc/ssl/certs
+          name: ca-certs
+          readOnly: true
+        - mountPath: /etc/kubernetes/controller-manager.conf
+          name: kubeconfig
+          readOnly: true
+  hostNetwork: true
+  volumes:
+    - hostPath:
+        path: /etc/kubernetes/pki
+        type: DirectoryOrCreate
+      name: k8s-certs
+    - hostPath:
+        path: /etc/ssl/certs
+        type: DirectoryOrCreate
+      name: ca-certs
+    - hostPath:
+        path: /etc/kubernetes/controller-manager.conf
+        type: FileOrCreate
+      name: kubeconfig
+status: {}
