@@ -76,6 +76,7 @@ class hyperkube(
     file {
       default:
         ensure  => directory,
+        force   => true,
         purge   => true,
         recurse => true;
 
