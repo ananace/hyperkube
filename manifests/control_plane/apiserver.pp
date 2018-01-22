@@ -186,6 +186,8 @@ class hyperkube::control_plane::apiserver(
 
   Enum['present','absent'] $ensure = present,
 ) {
+  include ::hyperkube
+
   if $extra_parameters != undef {
     if $extra_parameters =~ String {
       $_extra_parameters = [$extra_parameters]
