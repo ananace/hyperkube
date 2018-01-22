@@ -1,0 +1,105 @@
+<%- |
+  Hyperkube::CIDR $cluster_cidr,
+  String $request_cpu = '250m',
+  String $docker_registry = 'gcr.io/google_containers',
+  String $docker_image = 'kube-proxy',
+  String $docker_image_tag = pick($hyperkube::docker_image_tag, "v${hyperkube::version}"),
+  Optional[Variant[String,Array[String]]] $extra_params = undef,
+| -%>
+<%-
+if $extra_params =~ Array[String] {
+  $_extra_params = join($extra_params, ' ')
+} else {
+  $_extra_params = $extra_params
+}
+-%>
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-proxy
+  namespace: kube-system
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: system:kube-proxy
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+subjects:
+  - kind: ServiceAccount
+    name: kube-proxy
+    namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: system:node-proxier
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  labels:
+    k8s-app: kube-proxy
+    addonmanager.kubernetes.io/mode: Reconcile
+  name: kube-proxy
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: kube-proxy
+  template:
+    metadata:
+      labels:
+        k8s-app: kube-proxy
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      containers:
+      - command:
+        - /bin/sh
+        - -c
+        - kube-proxy --cluster-cidr=<%= $cluster_cidr %> --resource-container="" --oom-score-adj=-998 <%= $_extra_params %> 1>>/var/log/kube-proxy.log 2>&1
+        image: <%= $docker_registry %>/<%= $docker_image %>:<%= $docker_image_tag %>
+        imagePullPolicy: IfNotPresent
+        name: kube-proxy
+        resources:
+          requests:
+            cpu: <%= $request_cpu %>
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /var/log
+          name: var-log
+          readOnly: false
+        - mountPath: /run/xtables.lock
+          name: xtables-lock
+          readOnly: false
+        - mountPath: /lib/modules
+          name: lib-modules
+          readOnly: true
+      hostNetwork: true
+      serviceAccountName: kube-proxy
+      tolerations:
+      - operator: "Exists"
+        effect: "NoExecute"
+      - operator: "Exists"
+        effect: "NoSchedule"
+      volumes:
+      - hostPath:
+          path: /var/log
+        name: var-log
+      - hostPath:
+          path: /run/xtables.lock
+<%- if versioncmp($docker_image_tag[1,-1], '1.8.0') >= 0 { -%>
+          type: FileOrCreate
+<%- } -%>
+        name: xtables-lock
+      - hostPath:
+          path: /lib/modules
+        name: lib-modules
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 10%

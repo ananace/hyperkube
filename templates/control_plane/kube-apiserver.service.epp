@@ -1,0 +1,19 @@
+[Unit]
+Description=Kubernetes API Server
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+After=network.target etcd.service
+
+[Service]
+EnvironmentFile=-/etc/kubernetes/common
+EnvironmentFile=-/etc/kubernetes/apiserver
+User=kube
+ExecStart=/opt/hyperkube/bin/kube-apiserver \
+            $KUBE_LOGTOSTDERR \
+            $KUBE_LOG_LEVEL \
+            $KUBE_APISERVER_ARGS
+Restart=on-failure
+Type=notify
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
