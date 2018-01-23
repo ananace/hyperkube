@@ -237,5 +237,7 @@ class hyperkube::control_plane::scheduler(
         File['/etc/kubernetes/scheduler'],
       ],
     }
+
+    Exec['systemctl-daemon-reload'] -> Service['kube-scheduler']
   }
 }

@@ -201,5 +201,7 @@ class hyperkube::node::proxy(
         File['/etc/kubernetes/kube-proxy'],
       ],
     }
+
+    Exec['systemctl-daemon-reload'] -> Service['kube-proxy']
   }
 }
