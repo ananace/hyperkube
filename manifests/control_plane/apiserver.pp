@@ -408,6 +408,8 @@ class hyperkube::control_plane::apiserver(
           File['/etc/kubernetes/apiserver'],
         ],
       }
+
+      Exec['systemctl-daemon-reload'] -> Service['kube-apiserver']
     }
   }
 }

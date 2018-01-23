@@ -423,5 +423,7 @@ class hyperkube::node::kubelet(
         File['/etc/kubernetes/kubelet'],
       ],
     }
+
+    Exec['systemctl-daemon-reload'] -> Service['kubelet']
   }
 }
