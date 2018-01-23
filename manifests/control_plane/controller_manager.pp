@@ -339,5 +339,7 @@ class hyperkube::control_plane::controller_manager(
         File['/etc/kubernetes/controller-manager'],
       ],
     }
+
+    Exec['systemctl-daemon-reload'] -> Service['kube-controller-manager']
   }
 }
