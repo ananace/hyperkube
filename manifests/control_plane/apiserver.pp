@@ -155,7 +155,7 @@ class hyperkube::control_plane::apiserver(
   Optional[Array[String]] $requestheader_username_headers = undef,
   Optional[Hash[String,String]] $runtime_config = undef,
   Optional[Integer[1,65535]] $secure_port = 6443,
-  Optional[Variant[[Stdlib::Unixpath],Array[Stdlib::Unixpath]]] $service_account_key_file = undef,
+  Optional[Variant[Stdlib::Unixpath,Array[Stdlib::Unixpath]]] $service_account_key_file = undef,
   Optional[Boolean] $service_account_lookup = undef,
   Optional[Hyperkube::PortRange] $service_node_port_range = undef,
   Optional[Stdlib::Unixpath] $ssh_keyfile = undef,
